@@ -34,18 +34,29 @@
     <script src="js/debugger.js"></script>
     <script>
       let redirected = false;
+      let whiteFrameCount = 0;
       setInterval(() => {
         if (redirected) return;
         const canvas = document.querySelector('canvas');
         if (!canvas) return;
         try {
-          const ctx = canvas.getContext('2d');
-          const pixel = ctx.getImageData(0, 0, 1, 1).data;
-          if (pixel[0] === 255 && pixel[1] === 255 && pixel[2] === 255) {
-            redirected = true;
-            setTimeout(() => {
-              window.location.href = 'game2.html';
-            }, 1000);
+          // Try WebGL context
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (gl) {
+            const pixels = new Uint8Array(4);
+            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            if (pixels[0] === 255 && pixels[1] === 255 && pixels[2] === 255) {
+              whiteFrameCount++;
+            } else {
+              whiteFrameCount = 0;
+            }
+            // Only redirect after 3 consecutive white frames to avoid false positives
+            if (whiteFrameCount >= 3) {
+              redirected = true;
+              setTimeout(() => {
+                window.location.href = 'game2.html';
+              }, 1000);
+            }
           }
         } catch(e) {}
       }, 500);
