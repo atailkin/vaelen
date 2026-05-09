@@ -8263,8 +8263,8 @@ function loadWorldFromGameData(gameData) {
 }
 
 function reset_cur_game() {
-	if (curGameData == null) {
-		return; //can't reset if we don't have the game data
+	window.location.href = 'game2.html';
+		return;
 	}
 
 	stopGame();

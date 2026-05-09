@@ -93,68 +93,78 @@
 
         input::placeholder { color: #1f2833; }
 
-        .crt-overlay {
-            box-shadow: inset 0 0 100px rgba(69, 162, 158, 0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 48;
-        }
+			.crt-overlay {
+				box-shadow: inset 0 0 100px rgba(69, 162, 158, 0.1);
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				pointer-events: none;
+				z-index: 48;
+			}
 
-        .tv-shell {
-            position: relative;
-            width: min(100%, 1100px);
-            height: 90vh;
-            margin: 0 auto;
-            padding: 2rem;
-            border: 4px solid rgba(69, 162, 158, 0.65);
-            border-radius: 34px;
-            background: radial-gradient(circle at top, rgba(69, 162, 158, 0.08), rgba(0,0,0,0.96));
-            box-shadow: 0 0 80px rgba(69, 162, 158, 0.25), inset 0 0 60px rgba(69, 162, 158, 0.08);
-            overflow: hidden;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-        }
+			.tv-shell {
+				position: relative;
+				width: min(100%, 1000px);
+				height: 85vh;
+				margin: 0 auto;
+				/* Sharp, thin, industrial border instead of a thick TV casing */
+				border: 2px solid #1f2833; 
+				border-top: none; /* Removed top border to attach the header */
+				background: #050505;
+				box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+				z-index: 10;
+				display: flex;
+				flex-direction: column;
+				/* Ensure corners are sharp, not rounded */
+				border-radius: 0; 
+			}
 
-        .tv-shell::before,
-        .tv-shell::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70%;
-            height: 12px;
-            border-radius: 999px;
-            background: rgba(69, 162, 158, 0.15);
-            box-shadow: inset 0 0 10px rgba(69, 162, 158, 0.25);
-        }
+			/* Repurposed the TV shell ::before to act as an OS Window Header */
+			.tv-shell::before {
+				content: 'MEGACORP OS // YEREL PATOLOJİ TERMİNALİ';
+				display: block;
+				background: #45a29e;
+				color: #050505;
+				padding: 4px 12px;
+				font-size: 1.2rem;
+				font-weight: bold;
+				letter-spacing: 2px;
+				position: relative;
+				top: 0;
+				left: 0;
+				width: 100%;
+				transform: none; /* Removes the old centering */
+				border-radius: 0;
+				height: auto;
+				box-shadow: none;
+			}
 
-        .tv-shell::before { top: 8px; width: 60%; }
-        .tv-shell::after  { bottom: 8px; width: 50%; }
+			/* Hide the bottom fake TV reflection entirely */
+			.tv-shell::after { 
+				display: none; 
+			}
 
-        .tv-panel {
-            position: relative;
-            border: 2px solid rgba(69, 162, 158, 0.5);
-            border-radius: 24px;
-            padding: 1.5rem;
-            background: rgba(0,0,0,0.92);
-            box-shadow: inset 0 0 50px rgba(69, 162, 158, 0.08);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: transform 0.8s ease-in, opacity 0.8s ease-in, filter 0.8s ease-in;
-        }
+			.tv-panel {
+				position: relative;
+				border: none;
+				/* Inner screen is purely flat and functional */
+				border-top: 1px solid #1f2833;
+				background: rgba(0,0,0,0.92);
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				border-radius: 0; /* Sharp corners */
+				transition: transform 0.8s ease-in, opacity 0.8s ease-in, filter 0.8s ease-in;
+			}
 
-        .tv-shell.power-off .tv-panel {
-            transform: scaleY(0.15) translateY(35%);
-            opacity: 0.15;
-            filter: blur(1px);
-        }
+			.tv-shell.power-off .tv-panel {
+				transform: scaleY(0.15) translateY(35%);
+				opacity: 0.15;
+				filter: blur(1px);
+			}
 
         #app {
             flex: 1;
@@ -291,11 +301,10 @@
                 "Kendi ellerimde ilk titremeleri hissetmeye başladım.",
                 "Zamanım tükeniyor.",
                 "",
-                "Bugün sokağa çıktım. Her yer ölüm kokuyor. Bir kedi buldum... Onu masaya yatırmam gerekiyor.",
+                "Bugün sokağa çıktım. Her yer ölüm ile dolu. Bir kedi buldum... Onu masaya yatırıp incelemem gerekiyor.",
                 "",
-                "Bunu yapmak istemiyorum ama başka seçenek kalmadı. Hücresel bozulmanın kaynağını o masada bulmalıyım.",
+                "Bunu yapmaktan nefret ediyorum ama başka seçenek kalmadı. Tümör, virüs, bakteri her neyse bu hastalık, o masada cevabı bulmalıyım.",
                 "",
-                "Eğer bu notları okuyan biri varsa, bilin ki denedim.",
                 "Cevabı bulmalıyım.",
                 "Ne pahasına olursa olsun."
             ]
