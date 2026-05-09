@@ -1,0 +1,294 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>game3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IM+Fell+English:ital@0;1&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #ffffff;
+    color: #111111;
+    font-family: 'Share Tech Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #container {
+    width: 640px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #header {
+    border: 1px solid #111;
+    border-bottom: none;
+    padding: 8px 14px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    opacity: 0;
+    animation: fadein 0.5s ease 0.2s forwards;
+  }
+
+  #log {
+    border: 1px solid #111;
+    min-height: 320px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scrollbar-width: none;
+    opacity: 0;
+    animation: fadein 0.5s ease 0.4s forwards;
+  }
+
+  #log::-webkit-scrollbar { display: none; }
+
+  .entry {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: fadein 0.4s ease forwards;
+  }
+
+  .entry-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #aaa;
+  }
+
+  .entry-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #111;
+  }
+
+  .entry-text.god {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .entry-text.system {
+    font-size: 11px;
+    color: #888;
+    letter-spacing: 0.05em;
+  }
+
+  #divider {
+    border: none;
+    border-top: 1px solid #111;
+    opacity: 0;
+    animation: fadein 0.5s ease 0.6s forwards;
+  }
+
+  #choices {
+    border: 1px solid #111;
+    border-top: none;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    animation: fadein 0.5s ease 0.8s forwards;
+    min-height: 120px;
+  }
+
+  .choice {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: opacity 0.2s;
+  }
+
+  .choice:hover .choice-text { text-decoration: underline; }
+
+  .choice.used {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .choice-key {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #888;
+    min-width: 20px;
+  }
+
+  .choice-text {
+    font-size: 13px;
+    color: #111;
+  }
+
+  #footer {
+    border: 1px solid #111;
+    border-top: none;
+    padding: 6px 14px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: #bbb;
+    opacity: 0;
+    animation: fadein 0.5s ease 1s forwards;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #fade-overlay {
+    position: fixed;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease;
+    z-index: 999;
+  }
+
+  #fade-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div id="fade-overlay"></div>
+
+<div id="container">
+  <div id="header">
+    <span>TERMINAL // DOSYA-∅</span>
+    <span id="timestamp"></span>
+  </div>
+
+  <div id="log">
+    <div class="entry">
+      <span class="entry-label">SİSTEM</span>
+      <span class="entry-text system">DECORATIFTEXT1.</span>
+    </div>
+  </div>
+
+  <hr id="divider">
+
+  <div id="choices">
+    <div class="choice" data-key="1" onclick="choose(1)">
+      <span class="choice-key">[1]</span>
+      <span class="choice-text">Q1</span>
+    </div>
+    <div class="choice" data-key="2" onclick="choose(2)">
+      <span class="choice-key">[2]</span>
+      <span class="choice-text">Q2</span>
+    </div>
+    <div class="choice" data-key="3" onclick="choose(3)">
+      <span class="choice-key">[3]</span>
+      <span class="choice-text">Q3</span>
+    </div>
+  </div>
+
+  <div id="footer">
+    <span>KLAVYE: 1 · 2 · 3</span>
+    <span id="answered-count">0/3 TAMAMLANDI</span>
+  </div>
+</div>
+
+<script>
+  const questions = {
+    1: { q: "Q1", a: "A1" },
+    2: { q: "Q2", a: "A2" },
+    3: { q: "Q3", a: "A3" }
+  };
+
+  const answered = new Set();
+  const log = document.getElementById('log');
+
+  document.getElementById('timestamp').textContent = '1894.11.12';
+
+  function addEntry(label, text, className = '') {
+    const entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.innerHTML = `
+      <span class="entry-label">${label}</span>
+      <span class="entry-text ${className}">${text}</span>
+    `;
+    log.appendChild(entry);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function choose(n) {
+    if (answered.has(n)) return;
+    answered.add(n);
+
+    const { q, a } = questions[n];
+
+    // mark choice as used
+    document.querySelector(`.choice[data-key="${n}"]`).classList.add('used');
+
+    // add to log
+    addEntry('VAELEN', q);
+    setTimeout(() => {
+      addEntry('VEIDAN', a, 'god');
+      updateCount();
+      if (answered.size === 3) endConversation();
+    }, 600);
+  }
+
+  function updateCount() {
+    document.getElementById('answered-count').textContent =
+      `${answered.size}/3 TAMAMLANDI`;
+  }
+
+  function endConversation() {
+    setTimeout(() => {
+      addEntry('SİSTEM', 'ENDTEXT.', 'system');
+      setTimeout(() => {
+        document.getElementById('choices').style.opacity = '0.2';
+        document.getElementById('choices').style.pointerEvents = 'none';
+        setTimeout(() => {
+          document.getElementById('fade-overlay').classList.add('active');
+        }, 1500);
+      }, 800);
+    }, 800);
+  }
+
+  // keyboard controls
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '1') choose(1);
+    if (e.key === '2') choose(2);
+    if (e.key === '3') choose(3);
+  });
+</script>
+</body>
+<audio id="bgm" src="merrygo.mp3" loop></audio>
+<script>
+  // autoplay requires user interaction first — start on first keypress or click
+  let musicStarted = false;
+  function startMusic() {
+    if (!musicStarted) {
+      musicStarted = true;
+      document.getElementById('bgm').play();
+    }
+  }
+  document.addEventListener('keydown', startMusic);
+  document.addEventListener('click', startMusic);
+</script>
+</body>
+</html>

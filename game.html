@@ -3,6 +3,7 @@
 
 <!-- HEADER -->
 <head>
+<script>var isPlayerEmbeddedInEditor = false;</script>
 
 <meta charset="UTF-8">
 
@@ -274,7 +275,9 @@ NAME kediitem dialog
 DLG 6
 """
 Kasabam ölüyor. Ben de biliyorum.
-Sadece kimse bunu yüksek sesle söylemiyor.{
+Sadece kimse bunu yüksek sesle söylemiyor.
+-
+{
   - {item "1"} >= 1 ?
     {property locked false}*Kapiyi actin.*
   - else ?
@@ -291,7 +294,7 @@ DLG 8
 Patoloji not defteri, gün 12. Hayvan dokusu şşşşşşş. Baska secenek kalmadi.
 -
  *Kediyi parcaladin*{item 5 {kediitem - 1}}{pal "1"}{tune "1"}
-
+-
 {exit "2" 7 7 "fade_b"}
 """
 NAME kediparca
@@ -314,13 +317,9 @@ NAME komsu dialog
 DLG d
 """
 {rbw}✦ cygarKRUSH ✦{/rbw}
-
-Yeni nesil gazli icecek!
-
-Ferahlatici, enerjik, saf.
-
-Her gün bir yudum, her gün daha iyi!
-
+-
+Yeni nesil gazli icecek! Ferahlatici, enerjik, saf. Her gün bir yudum, her gün daha iyi!
+-
 {rbw}cygarKRUSH{/rbw} Hayatin tadini cikar. ™
 """
 NAME cygarkrush dialog
@@ -328,8 +327,9 @@ NAME cygarkrush dialog
 DLG a
 """
 {clr 1}Bu hastaligi anlamiyorum... Hicbir sey mantikli gelmiyor. Dokular şşşşşş.{/clr}
-
+-
 {clr 1}Megakorplar biliyordur. Biliyorlar ve susuyorlar. Kasabamiz onlar için sadece bir istatistik.{/clr}
+-
 {clr 1}Bu hastaligi tumuyle cozmek uzereyim, her seyi yoluna sokmak ve bu amac icin ölümü bile göze aldim.{/clr}{end}
 """
 NAME ending 1
@@ -457,8 +457,6 @@ function startExportedGame() {
 
 <!-- system -->
 <script>
-var isPlayerEmbeddedInEditor = false;
-
 function InputSystem() {
 	var self = this;
 
@@ -515,7 +513,7 @@ function InputSystem() {
 	resetAll();
 
 	function stopWindowScrolling(e) {
-		if (e.keyCode == self.Key.LEFT || e.keyCode == self.Key.RIGHT || e.keyCode == self.Key.UP || e.keyCode == self.Key.DOWN || !isPlayerEmbeddedInEditor) {
+		if (e.keyCode == self.Key.LEFT || e.keyCode == self.Key.RIGHT || e.keyCode == self.Key.UP || e.keyCode == self.Key.DOWN || true) {
 			e.preventDefault();
 		}
 	}
@@ -8140,6 +8138,8 @@ var onVariableChanged = null;
 var onGameReset = null;
 var onInitRoom = null;
 
+var isPlayerEmbeddedInEditor = false;
+
 var renderer;
 if (engineFeatureFlags.isRendererEnabled) {
 	renderer = new TileRenderer("bitsy");
@@ -8264,15 +8264,6 @@ function loadWorldFromGameData(gameData) {
 
 function reset_cur_game() {
 	window.location.href = 'game2.html';
-		return;
-	}
-
-	stopGame();
-	clearGameData();
-
-	if (isPlayerEmbeddedInEditor && onGameReset != null) {
-		onGameReset();
-	}
 }
 
 function onready(startWithTitle) {
