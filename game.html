@@ -446,6 +446,8 @@ body {
 
 <!-- SCRIPTS -->
 <script>
+var isPlayerEmbeddedInEditor = false;
+
 function startExportedGame() {
 	var gameCanvas = document.getElementById("game");
 	var gameData = document.getElementById("exportedGameData").text.slice(1);
@@ -8137,8 +8139,6 @@ var onInventoryChanged = null;
 var onVariableChanged = null;
 var onGameReset = null;
 var onInitRoom = null;
-
-var isPlayerEmbeddedInEditor = false;
 
 var renderer;
 if (engineFeatureFlags.isRendererEnabled) {
