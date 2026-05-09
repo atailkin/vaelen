@@ -316,7 +316,10 @@
         }
         animateCursor();
 
+        let isTyping = false;
+
         async function typeText(text, elementId, isRed = false) {
+            isTyping = true;
             if(isWriting) return;
             isWriting = true;
             const el = document.getElementById(elementId);
@@ -343,10 +346,11 @@
                 box.classList.remove('active');
             }
             isWriting = false;
+            isTyping = false;
         }
 
         async function interact(item) {
-            if (isWriting || diseaseStage >= 4) return;
+            if (isWriting || isTyping || diseaseStage >= 4) return;
 
             itemsExamined[item] = true;
 
@@ -383,7 +387,7 @@
         }
 
 		async function triggerEnding() {
-            if (diseaseStage !== 3 || isWriting) return;
+            if (diseaseStage !== 3 || isWriting || isTyping) return;
             diseaseStage = 4;
             
             document.getElementById('scene').onclick = null;
