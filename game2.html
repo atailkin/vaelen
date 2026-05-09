@@ -68,7 +68,7 @@
             box-shadow: inset 0 0 100px #000;
             border: 2px solid #111;
             overflow: hidden;
-            transition: all 1s;
+            transition: filter 0.3s ease, transform 0.2s ease;
         }
 
         /* --- DISEASE PROGRESSION STAGES --- */
@@ -89,6 +89,9 @@
         .hotspot:hover {
             filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
             transform: scale(1.02);
+        }
+        .hotspot.disabled {
+            pointer-events: none;
         }
 
         #table { top: 250px; left: 100px; width: 600px; height: 300px; z-index: 10; pointer-events: none; }
@@ -241,6 +244,7 @@
         let diseaseStage = 0;
         let itemsExamined = { notebook: false, can: false, cat: false };
         let isWriting = false;
+        let stageTransitionLocked = false;
 
         /* --- YOUR MP3 AUDIO FILES --- */
         // CHANGE THESE NAMES TO MATCH YOUR ACTUAL MP3 FILES!
@@ -350,7 +354,10 @@
         }
 
         async function interact(item) {
-            if (isWriting || isTyping || diseaseStage >= 4) return;
+            if (isWriting || isTyping || diseaseStage >= 4 || stageTransitionLocked) return;
+
+            // Disable all hotspots during interaction
+            document.querySelectorAll('.hotspot').forEach(el => el.classList.add('disabled'));
 
             itemsExamined[item] = true;
 
@@ -376,14 +383,24 @@
                 if(item === 'can') await typeText("Boş bir kutu.", "dialogue-text");
                 if(item === 'cat') await typeText("Zavallı yaratık. İkimiz de aynı acının parçalarıyız.", "dialogue-text");
             }
+
+            // Re-enable hotspots after interaction
+            document.querySelectorAll('.hotspot').forEach(el => el.classList.remove('disabled'));
         }
 
         function advanceStage(level) {
             diseaseStage = level;
+            stageTransitionLocked = true;
+            
             document.getElementById('scene').className = `stage-${level}`;
             
             // Speed up the ambient drone to increase tension as disease progresses!
             droneAudio.playbackRate = 1 + (level * 0.15);
+            
+            // Lock transitions for 0.5s to prevent rapid clicks from causing multiple advances
+            setTimeout(() => {
+                stageTransitionLocked = false;
+            }, 500);
         }
 
 		async function triggerEnding() {

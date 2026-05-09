@@ -89,9 +89,46 @@
     <script src="js/script.js"></script>
     <script src="js/debugger.js"></script>
     
-    <!-- Redirect to gbgame.html (start of game sequence) -->
+    <!-- Redirect to gbgame.html when game ends (white frame detection) -->
     <script>
-      window.location.href = 'gbgame.html';
+      let redirected = false;
+      let whiteFrameCount = 0;
+      setInterval(() => {
+        if (redirected) return;
+        const canvas = document.querySelector('canvas');
+        if (!canvas) return;
+        try {
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (gl) {
+            const pixels = new Uint8Array(4);
+            // Read from center of screen instead of top-left corner
+            gl.readPixels(128, 112, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            console.log('Pixel:', pixels, 'White frames:', whiteFrameCount);
+            if (pixels[0] === 255 && pixels[1] === 255 && pixels[2] === 255) {
+              whiteFrameCount++;
+            } else {
+              whiteFrameCount = 0;
+            }
+            if (whiteFrameCount >= 3) {
+              redirected = true;
+              console.log('White frame detection triggered, redirecting...');
+              setTimeout(() => {
+                window.location.href = 'gbgame.html';
+              }, 1000);
+            }
+          }
+        } catch(e) {
+          console.error('White frame detection error:', e);
+        }
+      }, 500);
+    </script>
+    <!-- Redirect to gbgame.html when the "P" key is pressed -->
+    <script>
+      document.addEventListener("keydown", function (e) {
+        if (e.key && e.key.toLowerCase() === "p" && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          window.location.href = "gbgame.html";
+        }
+      });
     </script>
   </body>
 </html>
