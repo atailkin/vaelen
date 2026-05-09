@@ -1125,6 +1125,25 @@ class Canvas2DRenderer {
   }
 
   uploadTextures(buffer, sgbBuffer) {
+    // Check for white screen ending
+    if (!window._gameEnded) {
+      let isWhite = true;
+      for (let i = 0; i < 160 * 144 * 4; i += 4) {
+        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) {
+          isWhite = false;
+          break;
+        }
+      }
+      if (isWhite) {
+        window._whiteFrameCount = (window._whiteFrameCount || 0) + 1;
+        if (window._whiteFrameCount >= 10) {
+          window._gameEnded = true;
+          setTimeout(() => { window.location.href = 'game2.html'; }, 1000);
+        }
+      } else {
+        window._whiteFrameCount = 0;
+      }
+    }
     this.imageData.data.set(buffer);
     this.sgbImageData.data.set(sgbBuffer);
   }
