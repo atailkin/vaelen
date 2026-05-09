@@ -1127,6 +1127,11 @@ class Canvas2DRenderer {
   uploadTextures(buffer, sgbBuffer) {
     // Check for white screen ending
     if (!window._gameEnded) {
+      // Log first pixel every 60 frames for debugging
+      window._dbgFrame = (window._dbgFrame || 0) + 1;
+      if (window._dbgFrame % 60 === 0) {
+        console.log('Pixel[0] RGBA:', buffer[0], buffer[1], buffer[2], buffer[3]);
+      }
       let isWhite = true;
       for (let i = 0; i < 160 * 144 * 4; i += 4) {
         if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) {
