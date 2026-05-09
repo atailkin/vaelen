@@ -43,7 +43,7 @@
           if (gl) {
             const pixels = new Uint8Array(4);
             gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-            if (pixels[0] === 255 && pixels[1] === 255 && pixels[2] === 255) {
+            if (pixels[0] === 245 && pixels[1] === 245 && pixels[2] === 245) {
               whiteFrameCount++;
             } else {
               whiteFrameCount = 0;
