@@ -136,6 +136,8 @@
         #dialogue-box.active { opacity: 1; }
         
         .red-text { color: #ff3333; text-shadow: 0 0 5px #ff0000; font-style: italic; }
+        .shake-text { animation: text-shake 0.08s infinite; display: inline-block; }
+        @keyframes text-shake { 0% { transform: translate(0, 0); } 25% { transform: translate(-1px, 1px); } 50% { transform: translate(1px, -1px); } 75% { transform: translate(-1px, -1px); } 100% { transform: translate(0, 1px); } }
 
         /* --- CUSTOM CURSOR (THE TREMOR) --- */
         #custom-cursor {
@@ -322,24 +324,30 @@
 
         let isTyping = false;
 
-        async function typeText(text, elementId, isRed = false) {
-            isTyping = true;
-            if(isWriting) return;
+        async function typeText(text, elementId, isRed = false, isShaking = false) {
+            if (isWriting || isTyping) return;
             isWriting = true;
+            isTyping = true;
             const el = document.getElementById(elementId);
             const box = document.getElementById('dialogue-box');
             
-            if(elementId === 'dialogue-text') box.classList.add('active');
-            
+            if (elementId === 'dialogue-text') box.classList.add('active');
+
+            const classNames = [];
+            if (isRed) classNames.push('red-text');
+            if (isShaking) classNames.push('shake-text');
+            const wrapperStart = classNames.length ? `<span class="${classNames.join(' ')}">` : '';
+            const wrapperEnd = classNames.length ? `</span>` : '';
+
             el.innerHTML = '';
-            let formattedText = isRed ? `<span class="red-text">` : '';
+            let formattedText = wrapperStart;
             
             for (let i = 0; i < text.length; i++) {
                 formattedText += text.charAt(i);
-                el.innerHTML = formattedText + (isRed ? `</span>` : '');
+                el.innerHTML = formattedText + wrapperEnd;
                 
                 // Play tiny click for text
-                if(i % 3 === 0) playTextBeep();
+                if (i % 3 === 0) playTextBeep();
                 
                 await new Promise(r => setTimeout(r, 40));
             }
@@ -366,7 +374,7 @@
                 advanceStage(1);
             } 
             else if (item === 'can' && diseaseStage === 1) {
-                await typeText("Mide bulandırıcı, metalden bir kutu.", "dialogue-text");
+                await typeText("Mide bulandırıcı, metalden bir kutu.", "dialogue-text", false, true);
                 advanceStage(2);
             }
             else if (item === 'cat' && diseaseStage === 2) {
@@ -379,9 +387,9 @@
                 cursor.style.borderColor = "red";
             }
             else {
-                if(item === 'notebook') await typeText("Kelimeler birbirine giriyor. Okuyamıyorum.", "dialogue-text");
-                if(item === 'can') await typeText("Boş bir kutu.", "dialogue-text");
-                if(item === 'cat') await typeText("Zavallı yaratık. İkimiz de aynı acının parçalarıyız.", "dialogue-text");
+                if(item === 'notebook') await typeText("Kelimeler birbirine giriyor. Okuyamıyorum.", "dialogue-text", true, true);
+                if(item === 'can') await typeText("Boş bir kutu.", "dialogue-text", true, true);
+                if(item === 'cat') await typeText("Zavallı yaratık. İkimiz de aynı acının parçalarıyız.", "dialogue-text", true, true);
             }
 
             // Re-enable hotspots after interaction
