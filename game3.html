@@ -119,7 +119,7 @@
 
   .choice:hover .choice-text { text-decoration: underline; }
 
-  .choice.used {
+  .choice.disabled {
     opacity: 0.3;
     pointer-events: none;
   }
@@ -235,6 +235,10 @@
 
   document.getElementById('timestamp').textContent = '1894.11.12';
 
+  // Initially disable choices 2 and 3
+  document.querySelector('.choice[data-key="2"]').classList.add('disabled');
+  document.querySelector('.choice[data-key="3"]').classList.add('disabled');
+
   function addEntry(label, text, className = '') {
     const entry = document.createElement('div');
     entry.className = 'entry';
@@ -248,12 +252,21 @@
 
   function choose(n) {
     if (answered.has(n)) return;
+    // Check if previous choice is answered
+    if (n > 1 && !answered.has(n - 1)) return;
+
     answered.add(n);
 
     const { q, a } = questions[n];
 
     // mark choice as used
     document.querySelector(`.choice[data-key="${n}"]`).classList.add('used');
+
+    // enable next choice if exists
+    const nextChoice = document.querySelector(`.choice[data-key="${n + 1}"]`);
+    if (nextChoice) {
+      nextChoice.classList.remove('disabled');
+    }
 
     // add to log
     addEntry('VAELEN', q);
@@ -273,7 +286,7 @@
     setTimeout(() => {
       addEntry('SİSTEM', '*END TRANSMISSION*', 'system');
       setTimeout(() => {
-        document.getElementById('choices').style.opacity = '0.2';
+        document.getElementById('choices').style.opacity = '1';
         document.getElementById('choices').style.pointerEvents = 'none';
         setTimeout(() => {
           document.getElementById('fade-overlay').classList.add('active');
