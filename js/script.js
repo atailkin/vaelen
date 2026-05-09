@@ -57,8 +57,8 @@ const REWIND_FRAMES_PER_BASE_STATE = 45;
 const REWIND_BUFFER_CAPACITY = 4 * 1024 * 1024;
 const REWIND_FACTOR = 1.5;
 const REWIND_UPDATE_MS = 16;
-const GAMEPAD_POLLING_INTERVAL = 1000 / 60 / 4; // When activated, poll for gamepad input about ~4 times per gameboy frame (~240 times second)
-const GAMEPAD_KEYMAP_STANDARD_STR = "standard"; // Try to use "standard" HTML5 mapping config if available
+const GAMEPAD_POLLING_INTERVAL = 1000 / 60 / 4;
+const GAMEPAD_KEYMAP_STANDARD_STR = "standard";
 
 const $ = document.querySelector.bind(document);
 let emulator = null;
@@ -81,7 +81,6 @@ if (sgbEnabled) {
   $("canvas").height = SCREEN_HEIGHT;
 }
 
-// Extract stuff from the vue.js implementation in demo.js.
 class VM {
   constructor() {
     this.ticks = 0;
@@ -137,7 +136,6 @@ class VM {
 
 const vm = new VM();
 
-// Load a ROM.
 (async function go() {
   let response = await fetch(ROM_FILENAME);
   let romBuffer = await response.arrayBuffer();
@@ -567,12 +565,11 @@ class Emulator {
   unbindKeys() {
     window.removeEventListener("keydown", this.boundKeyDown);
     window.removeEventListener("keyup", this.boundKeyUp);
-    window.removeEventListener("blur", this.boundWindowBlur); 
+    window.removeEventListener("blur", this.boundWindowBlur);
   }
 
   keyDown(event) {
     const key = event.key.toLowerCase();
-
     if (key === "w" && (event.metaKey || event.ctrlKey)) {
       return;
     }
@@ -607,12 +604,10 @@ class Emulator {
       this.autoRewind = false;
       vm.paused = false;
     }
-  }  
+  }
 
   keyRewind(isKeyDown) {
-    if (!ENABLE_REWIND) {
-      return;
-    }
+    if (!ENABLE_REWIND) return;
     if (this.isRewinding !== isKeyDown) {
       if (isKeyDown) {
         vm.paused = true;
@@ -625,16 +620,12 @@ class Emulator {
   }
 
   keyPause(isKeyDown) {
-    if (!ENABLE_PAUSE) {
-      return;
-    }
+    if (!ENABLE_PAUSE) return;
     if (isKeyDown) vm.togglePause();
   }
 
   keyPrevPalette(isKeyDown) {
-    if (!ENABLE_SWITCH_PALETTES) {
-      return;
-    }
+    if (!ENABLE_SWITCH_PALETTES) return;
     if (isKeyDown) {
       vm.palIdx = (vm.palIdx + PALETTES.length - 1) % PALETTES.length;
       emulator.setBuiltinPalette(vm.palIdx);
@@ -642,39 +633,21 @@ class Emulator {
   }
 
   keyNextPalette(isKeyDown) {
-    if (!ENABLE_SWITCH_PALETTES) {
-      return;
-    }
+    if (!ENABLE_SWITCH_PALETTES) return;
     if (isKeyDown) {
       vm.palIdx = (vm.palIdx + 1) % PALETTES.length;
       emulator.setBuiltinPalette(vm.palIdx);
     }
   }
 
-  setJoypDown(set) {
-    this.module._set_joyp_down(this.e, set);
-  }
-  setJoypUp(set) {
-    this.module._set_joyp_up(this.e, set);
-  }
-  setJoypLeft(set) {
-    this.module._set_joyp_left(this.e, set);
-  }
-  setJoypRight(set) {
-    this.module._set_joyp_right(this.e, set);
-  }
-  setJoypSelect(set) {
-    this.module._set_joyp_select(this.e, set);
-  }
-  setJoypStart(set) {
-    this.module._set_joyp_start(this.e, set);
-  }
-  setJoypB(set) {
-    this.module._set_joyp_B(this.e, set);
-  }
-  setJoypA(set) {
-    this.module._set_joyp_A(this.e, set);
-  }
+  setJoypDown(set) { this.module._set_joyp_down(this.e, set); }
+  setJoypUp(set) { this.module._set_joyp_up(this.e, set); }
+  setJoypLeft(set) { this.module._set_joyp_left(this.e, set); }
+  setJoypRight(set) { this.module._set_joyp_right(this.e, set); }
+  setJoypSelect(set) { this.module._set_joyp_select(this.e, set); }
+  setJoypStart(set) { this.module._set_joyp_start(this.e, set); }
+  setJoypB(set) { this.module._set_joyp_B(this.e, set); }
+  setJoypA(set) { this.module._set_joyp_A(this.e, set); }
 }
 
 class Gamepad {
@@ -683,116 +656,29 @@ class Gamepad {
     this.e = e;
   }
 
-  // Load a key map for gamepad-to-gameboy buttons
   bindKeys(strMapping) {
     this.GAMEPAD_KEYMAP_STANDARD = [
-      {
-        gb_key: "b",
-        gp_button: 0,
-        type: "button",
-        gp_bind: this.module._set_joyp_B.bind(null, this.e),
-      },
-      {
-        gb_key: "a",
-        gp_button: 1,
-        type: "button",
-        gp_bind: this.module._set_joyp_A.bind(null, this.e),
-      },
-      {
-        gb_key: "select",
-        gp_button: 8,
-        type: "button",
-        gp_bind: this.module._set_joyp_select.bind(null, this.e),
-      },
-      {
-        gb_key: "start",
-        gp_button: 9,
-        type: "button",
-        gp_bind: this.module._set_joyp_start.bind(null, this.e),
-      },
-      {
-        gb_key: "up",
-        gp_button: 12,
-        type: "button",
-        gp_bind: this.module._set_joyp_up.bind(null, this.e),
-      },
-      {
-        gb_key: "down",
-        gp_button: 13,
-        type: "button",
-        gp_bind: this.module._set_joyp_down.bind(null, this.e),
-      },
-      {
-        gb_key: "left",
-        gp_button: 14,
-        type: "button",
-        gp_bind: this.module._set_joyp_left.bind(null, this.e),
-      },
-      {
-        gb_key: "right",
-        gp_button: 15,
-        type: "button",
-        gp_bind: this.module._set_joyp_right.bind(null, this.e),
-      },
+      { gb_key: "b", gp_button: 0, type: "button", gp_bind: this.module._set_joyp_B.bind(null, this.e) },
+      { gb_key: "a", gp_button: 1, type: "button", gp_bind: this.module._set_joyp_A.bind(null, this.e) },
+      { gb_key: "select", gp_button: 8, type: "button", gp_bind: this.module._set_joyp_select.bind(null, this.e) },
+      { gb_key: "start", gp_button: 9, type: "button", gp_bind: this.module._set_joyp_start.bind(null, this.e) },
+      { gb_key: "up", gp_button: 12, type: "button", gp_bind: this.module._set_joyp_up.bind(null, this.e) },
+      { gb_key: "down", gp_button: 13, type: "button", gp_bind: this.module._set_joyp_down.bind(null, this.e) },
+      { gb_key: "left", gp_button: 14, type: "button", gp_bind: this.module._set_joyp_left.bind(null, this.e) },
+      { gb_key: "right", gp_button: 15, type: "button", gp_bind: this.module._set_joyp_right.bind(null, this.e) },
     ];
 
     this.GAMEPAD_KEYMAP_DEFAULT = [
-      {
-        gb_key: "a",
-        gp_button: 0,
-        type: "button",
-        gp_bind: this.module._set_joyp_A.bind(null, this.e),
-      },
-      {
-        gb_key: "b",
-        gp_button: 1,
-        type: "button",
-        gp_bind: this.module._set_joyp_B.bind(null, this.e),
-      },
-      {
-        gb_key: "select",
-        gp_button: 2,
-        type: "button",
-        gp_bind: this.module._set_joyp_select.bind(null, this.e),
-      },
-      {
-        gb_key: "start",
-        gp_button: 3,
-        type: "button",
-        gp_bind: this.module._set_joyp_start.bind(null, this.e),
-      },
-      {
-        gb_key: "up",
-        gp_button: 2,
-        type: "axis",
-        gp_bind: this.module._set_joyp_up.bind(null, this.e),
-      },
-      {
-        gb_key: "down",
-        gp_button: 3,
-        type: "axis",
-        gp_bind: this.module._set_joyp_down.bind(null, this.e),
-      },
-      {
-        gb_key: "left",
-        gp_button: 0,
-        type: "axis",
-        gp_bind: this.module._set_joyp_left.bind(null, this.e),
-      },
-      {
-        gb_key: "right",
-        gp_button: 1,
-        type: "axis",
-        gp_bind: this.module._set_joyp_right.bind(null, this.e),
-      },
+      { gb_key: "a", gp_button: 0, type: "button", gp_bind: this.module._set_joyp_A.bind(null, this.e) },
+      { gb_key: "b", gp_button: 1, type: "button", gp_bind: this.module._set_joyp_B.bind(null, this.e) },
+      { gb_key: "select", gp_button: 2, type: "button", gp_bind: this.module._set_joyp_select.bind(null, this.e) },
+      { gb_key: "start", gp_button: 3, type: "button", gp_bind: this.module._set_joyp_start.bind(null, this.e) },
+      { gb_key: "up", gp_button: 2, type: "axis", gp_bind: this.module._set_joyp_up.bind(null, this.e) },
+      { gb_key: "down", gp_button: 3, type: "axis", gp_bind: this.module._set_joyp_down.bind(null, this.e) },
+      { gb_key: "left", gp_button: 0, type: "axis", gp_bind: this.module._set_joyp_left.bind(null, this.e) },
+      { gb_key: "right", gp_button: 1, type: "axis", gp_bind: this.module._set_joyp_right.bind(null, this.e) },
     ];
 
-    // Try to use the w3c "standard" gamepad mapping if available
-    // (Chrome/V8 seems to do that better than Firefox)
-    //
-    // Otherwise use a default mapping that assigns
-    // A/B/Select/Start to the first four buttons,
-    // and U/D/L/R to the first two axes.
     if (strMapping === GAMEPAD_KEYMAP_STANDARD_STR) {
       this.gp.keybinds = this.GAMEPAD_KEYMAP_STANDARD;
     } else {
@@ -801,58 +687,36 @@ class Gamepad {
   }
 
   cacheValues(gamepad) {
-    // Read Buttons
     for (let k = 0; k < gamepad.buttons.length; k++) {
-      // .value is for analog, .pressed is for boolean buttons
-      this.gp.buttons.cur[k] =
-        gamepad.buttons[k].value > 0 || gamepad.buttons[k].pressed == true;
-
-      // Update state changed if not on first input pass
+      this.gp.buttons.cur[k] = gamepad.buttons[k].value > 0 || gamepad.buttons[k].pressed == true;
       if (this.gp.buttons.last !== undefined) {
-        this.gp.buttons.changed[k] =
-          this.gp.buttons.cur[k] != this.gp.buttons.last[k];
+        this.gp.buttons.changed[k] = this.gp.buttons.cur[k] != this.gp.buttons.last[k];
       }
     }
-
-    // Read Axes
     for (let k = 0; k < gamepad.axes.length; k++) {
-      // Decode each dpad axis into two buttons, one for each direction
       this.gp.axes.cur[k * 2] = gamepad.axes[k] < 0;
       this.gp.axes.cur[k * 2 + 1] = gamepad.axes[k] > 0;
-
-      // Update state changed if not on first input pass
       if (this.gp.axes.last !== undefined) {
-        this.gp.axes.changed[k * 2] =
-          this.gp.axes.cur[k * 2] != this.gp.axes.last[k * 2];
-        this.gp.axes.changed[k * 2 + 1] =
-          this.gp.axes.cur[k * 2 + 1] != this.gp.axes.last[k * 2 + 1];
+        this.gp.axes.changed[k * 2] = this.gp.axes.cur[k * 2] != this.gp.axes.last[k * 2];
+        this.gp.axes.changed[k * 2 + 1] = this.gp.axes.cur[k * 2 + 1] != this.gp.axes.last[k * 2 + 1];
       }
     }
-
-    // Save current state for comparison on next input
     this.gp.axes.last = this.gp.axes.cur.slice(0);
     this.gp.buttons.last = this.gp.buttons.cur.slice(0);
   }
 
   handleButton(keyBind) {
     let buttonCache;
-
-    // Select button / axis cache based on key bind type
     if (keyBind.type === "button") {
       buttonCache = this.gp.buttons;
     } else if (keyBind.type === "axis") {
       buttonCache = this.gp.axes;
     }
-
-    // Make sure the button exists in the cache array
     if (keyBind.gp_button < buttonCache.changed.length) {
-      // Send the button state if it's changed
       if (buttonCache.changed[keyBind.gp_button]) {
         if (buttonCache.cur[keyBind.gp_button]) {
-          // Gamepad Button Down
           keyBind.gp_bind(true);
         } else {
-          // Gamepad Button Up
           keyBind.gp_bind(false);
         }
       }
@@ -860,134 +724,68 @@ class Gamepad {
   }
 
   getCurrent() {
-    // Chrome requires retrieving a new gamepad object
-    // every time button state is queried (the existing object
-    // will have stale button state). Just do that for all browsers
     let gamepad = navigator.getGamepads()[this.gp.apiID];
-
-    if (gamepad) {
-      if (gamepad.connected) {
-        return gamepad;
-      }
-    }
-
+    if (gamepad && gamepad.connected) return gamepad;
     return undefined;
   }
 
   update() {
     let gamepad = this.getCurrent();
-
     if (gamepad !== undefined) {
-      // Cache gamepad input values
       this.cacheValues(gamepad);
-
-      // Loop through buttons and send changes if needed
       for (let i = 0; i < this.gp.keybinds.length; i++) {
         this.handleButton(this.gp.keybinds[i]);
       }
     } else {
-      // Gamepad is no longer present, disconnect
       this.releaseGamepad();
     }
   }
 
   startGamepad(gamepad) {
-    // Make sure it has enough buttons and axes
-    if (
-      gamepad.mapping === GAMEPAD_KEYMAP_STANDARD_STR ||
-      (gamepad.axes.length >= 2 && gamepad.buttons.length >= 4)
-    ) {
-      // Save API index for polling (required by Chrome/V8)
+    if (gamepad.mapping === GAMEPAD_KEYMAP_STANDARD_STR || (gamepad.axes.length >= 2 && gamepad.buttons.length >= 4)) {
       this.gp.apiID = gamepad.index;
-
-      // Assign gameboy keys to the gamepad
       this.bindKeys(gamepad.mapping);
-
-      // Start polling the gamepad for input
-      this.gp.timerID = setInterval(
-        () => this.update(),
-        GAMEPAD_POLLING_INTERVAL
-      );
+      this.gp.timerID = setInterval(() => this.update(), GAMEPAD_POLLING_INTERVAL);
     }
   }
 
   releaseGamepad() {
-    // Stop polling the gamepad for input
-    if (this.gp.timerID !== undefined) {
-      clearInterval(this.gp.timerID);
-    }
-
-    // Clear previous button history and controller info
+    if (this.gp.timerID !== undefined) clearInterval(this.gp.timerID);
     this.gp.axes.last = undefined;
     this.gp.buttons.last = undefined;
     this.gp.keybinds = undefined;
-
     this.gp.apiID = undefined;
   }
 
-  // If a gamepad was already connected on this page
-  // and released, it won't fire another connect event.
-  // So try to find any that might be present
   checkAlreadyConnected() {
     let gamepads = navigator.getGamepads();
-
-    // If any gamepads are already attached to the page,
-    // use the first one that is connected
     for (let idx = 0; idx < gamepads.length; idx++) {
-      if (gamepads[idx] !== undefined && gamepads[idx] !== null) {
-        if (gamepads[idx].connected === true) {
-          this.startGamepad(gamepads[idx]);
-        }
+      if (gamepads[idx] !== undefined && gamepads[idx] !== null && gamepads[idx].connected === true) {
+        this.startGamepad(gamepads[idx]);
       }
     }
   }
 
-  // Event handler for when a gamepad is connected
-  eventConnected(event) {
-    this.startGamepad(navigator.getGamepads()[event.gamepad.index]);
-  }
+  eventConnected(event) { this.startGamepad(navigator.getGamepads()[event.gamepad.index]); }
+  eventDisconnected(event) { this.releaseGamepad(); }
 
-  // Event handler for when a gamepad is disconnected
-  eventDisconnected(event) {
-    this.releaseGamepad();
-  }
-
-  // Register event connection handlers for gamepads
   init() {
-    // gamepad related vars
     this.gp = {
-      apiID: undefined,
-      timerID: undefined,
-      keybinds: undefined,
+      apiID: undefined, timerID: undefined, keybinds: undefined,
       axes: { last: undefined, cur: [], changed: [] },
       buttons: { last: undefined, cur: [], changed: [] },
     };
-
-    // Check for previously attached gamepads that might
-    // not emit a gamepadconnected() event
     this.checkAlreadyConnected();
-
     this.boundGamepadConnected = this.eventConnected.bind(this);
     this.boundGamepadDisconnected = this.eventDisconnected.bind(this);
-
-    // When a gamepad connects, start polling it for input
     window.addEventListener("gamepadconnected", this.boundGamepadConnected);
-
-    // When a gamepad disconnects, shut down polling for input
-    window.addEventListener(
-      "gamepaddisconnected",
-      this.boundGamepadDisconnected
-    );
+    window.addEventListener("gamepaddisconnected", this.boundGamepadDisconnected);
   }
 
-  // Release event connection handlers and settings
   shutdown() {
     this.releaseGamepad();
     window.removeEventListener("gamepadconnected", this.boundGamepadConnected);
-    window.removeEventListener(
-      "gamepaddisconnected",
-      this.boundGamepadDisconnected
-    );
+    window.removeEventListener("gamepaddisconnected", this.boundGamepadDisconnected);
   }
 }
 
@@ -995,14 +793,9 @@ class Audio {
   constructor(module, e) {
     this.started = false;
     this.module = module;
-    this.buffer = makeWasmBuffer(
-      this.module,
-      this.module._get_audio_buffer_ptr(e),
-      this.module._get_audio_buffer_capacity(e)
-    );
+    this.buffer = makeWasmBuffer(this.module, this.module._get_audio_buffer_ptr(e), this.module._get_audio_buffer_capacity(e));
     this.startSec = 0;
     this.resume();
-
     this.boundStartPlayback = this.startPlayback.bind(this);
     window.addEventListener("keydown", this.boundStartPlayback, true);
     window.addEventListener("click", this.boundStartPlayback, true);
@@ -1017,14 +810,10 @@ class Audio {
     this.resume();
   }
 
-  get sampleRate() {
-    return Audio.ctx.sampleRate;
-  }
+  get sampleRate() { return Audio.ctx.sampleRate; }
 
   pushBuffer() {
-    if (!this.started) {
-      return;
-    }
+    if (!this.started) return;
     const nowSec = Audio.ctx.currentTime;
     const nowPlusLatency = nowSec + AUDIO_LATENCY_SEC;
     const volume = vm.volume;
@@ -1041,33 +830,15 @@ class Audio {
       bufferSource.buffer = buffer;
       bufferSource.connect(Audio.ctx.destination);
       bufferSource.start(this.startSec);
-      const bufferSec = AUDIO_FRAMES / this.sampleRate;
-      this.startSec += bufferSec;
+      this.startSec += AUDIO_FRAMES / this.sampleRate;
     } else {
-      console.log(
-        "Resetting audio (" +
-          this.startSec.toFixed(2) +
-          " < " +
-          nowSec.toFixed(2) +
-          ")"
-      );
+      console.log("Resetting audio (" + this.startSec.toFixed(2) + " < " + nowSec.toFixed(2) + ")");
       this.startSec = nowPlusLatency;
     }
   }
 
-  pause() {
-    if (!this.started) {
-      return;
-    }
-    Audio.ctx.suspend();
-  }
-
-  resume() {
-    if (!this.started) {
-      return;
-    }
-    Audio.ctx.resume();
-  }
+  pause() { if (!this.started) return; Audio.ctx.suspend(); }
+  resume() { if (!this.started) return; Audio.ctx.resume(); }
 }
 
 Audio.ctx = new AudioContext();
@@ -1075,9 +846,6 @@ Audio.ctx = new AudioContext();
 class Video {
   constructor(module, e, el) {
     this.module = module;
-    // Both iPhone and Desktop Safari dont't upscale using image-rendering: pixelated
-    // on webgl canvases. See https://bugs.webkit.org/show_bug.cgi?id=193895.
-    // For now, default to Canvas2D.
     if (window.navigator.userAgent.match(/iPhone|iPad|15.[0-9] Safari/)) {
       this.renderer = new Canvas2DRenderer(el);
     } else {
@@ -1088,36 +856,19 @@ class Video {
         this.renderer = new Canvas2DRenderer(el);
       }
     }
-    this.buffer = makeWasmBuffer(
-      this.module,
-      this.module._get_frame_buffer_ptr(e),
-      this.module._get_frame_buffer_size(e)
-    );
-    this.sgbBuffer = makeWasmBuffer(
-      this.module,
-      this.module._get_sgb_frame_buffer_ptr(e),
-      this.module._get_sgb_frame_buffer_size(e)
-    );
+    this.buffer = makeWasmBuffer(this.module, this.module._get_frame_buffer_ptr(e), this.module._get_frame_buffer_size(e));
+    this.sgbBuffer = makeWasmBuffer(this.module, this.module._get_sgb_frame_buffer_ptr(e), this.module._get_sgb_frame_buffer_size(e));
   }
 
-  uploadTexture() {
-    this.renderer.uploadTextures(this.buffer, this.sgbBuffer);
-  }
-
-  renderTexture() {
-    this.renderer.renderTextures();
-  }
+  uploadTexture() { this.renderer.uploadTextures(this.buffer, this.sgbBuffer); }
+  renderTexture() { this.renderer.renderTextures(); }
 }
 
 class Canvas2DRenderer {
   constructor(el) {
     this.ctx = el.getContext("2d");
     this.imageData = this.ctx.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
-    this.sgbImageData = this.ctx.createImageData(
-      SGB_SCREEN_WIDTH,
-      SGB_SCREEN_HEIGHT
-    );
-
+    this.sgbImageData = this.ctx.createImageData(SGB_SCREEN_WIDTH, SGB_SCREEN_HEIGHT);
     this.overlayCanvas = document.createElement("canvas");
     this.overlayCanvas.width = SGB_SCREEN_WIDTH;
     this.overlayCanvas.height = SGB_SCREEN_HEIGHT;
@@ -1125,19 +876,14 @@ class Canvas2DRenderer {
   }
 
   uploadTextures(buffer, sgbBuffer) {
-    // Check for white screen ending
     if (!window._gameEnded) {
-      // Log first pixel every 60 frames for debugging
       window._dbgFrame = (window._dbgFrame || 0) + 1;
       if (window._dbgFrame % 60 === 0) {
-        console.log('Pixel[0] RGBA:', buffer[0], buffer[1], buffer[2], buffer[3]);
+        console.log('Canvas2D Pixel[0] RGBA:', buffer[0], buffer[1], buffer[2], buffer[3]);
       }
       let isWhite = true;
       for (let i = 0; i < 160 * 144 * 4; i += 4) {
-        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) {
-          isWhite = false;
-          break;
-        }
+        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) { isWhite = false; break; }
       }
       if (isWhite) {
         window._whiteFrameCount = (window._whiteFrameCount || 0) + 1;
@@ -1166,12 +912,8 @@ class Canvas2DRenderer {
 
 class WebGLRenderer {
   constructor(el) {
-    const gl = (this.gl = el.getContext("webgl", {
-      preserveDrawingBuffer: true,
-    }));
-    if (gl === null) {
-      throw new Error("unable to create webgl context");
-    }
+    const gl = (this.gl = el.getContext("webgl", { preserveDrawingBuffer: true }));
+    if (gl === null) throw new Error("unable to create webgl context");
 
     function compileShader(type, source) {
       const shader = gl.createShader(type);
@@ -1183,8 +925,7 @@ class WebGLRenderer {
       return shader;
     }
 
-    const vertexShader = compileShader(
-      gl.VERTEX_SHADER,
+    const vertexShader = compileShader(gl.VERTEX_SHADER,
       `attribute vec2 aPos;
         attribute vec2 aTexCoord;
         varying highp vec2 vTexCoord;
@@ -1193,8 +934,7 @@ class WebGLRenderer {
           vTexCoord = aTexCoord;
         }`
     );
-    const fragmentShader = compileShader(
-      gl.FRAGMENT_SHADER,
+    const fragmentShader = compileShader(gl.FRAGMENT_SHADER,
       `varying highp vec2 vTexCoord;
         uniform sampler2D uSampler;
         void main(void) {
@@ -1223,71 +963,18 @@ class WebGLRenderer {
     const r = invLerpClipSpace(SGB_SCREEN_RIGHT, SGB_SCREEN_WIDTH);
     const t = -invLerpClipSpace(SGB_SCREEN_TOP, SGB_SCREEN_HEIGHT);
     const b = -invLerpClipSpace(SGB_SCREEN_BOTTOM, SGB_SCREEN_HEIGHT);
-    const w = SCREEN_WIDTH / 256,
-      sw = SGB_SCREEN_WIDTH / 256;
-    const h = SCREEN_HEIGHT / 256,
-      sh = SGB_SCREEN_HEIGHT / 256;
+    const w = SCREEN_WIDTH / 256, sw = SGB_SCREEN_WIDTH / 256;
+    const h = SCREEN_HEIGHT / 256, sh = SGB_SCREEN_HEIGHT / 256;
 
     const verts = new Float32Array([
-      // fb only
-      -1,
-      -1,
-      0,
-      h,
-      +1,
-      -1,
-      w,
-      h,
-      -1,
-      +1,
-      0,
-      0,
-      +1,
-      +1,
-      w,
-      0,
-
-      // sgb fb
-      l,
-      b,
-      0,
-      h,
-      r,
-      b,
-      w,
-      h,
-      l,
-      t,
-      0,
-      0,
-      r,
-      t,
-      w,
-      0,
-
-      // sgb border
-      -1,
-      -1,
-      0,
-      sh,
-      +1,
-      -1,
-      sw,
-      sh,
-      -1,
-      +1,
-      0,
-      0,
-      +1,
-      +1,
-      sw,
-      0,
+      -1, -1, 0, h,  +1, -1, w, h,  -1, +1, 0, 0,  +1, +1, w, 0,
+      l, b, 0, h,  r, b, w, h,  l, t, 0, 0,  r, t, w, 0,
+      -1, -1, 0, sh,  +1, -1, sw, sh,  -1, +1, 0, 0,  +1, +1, sw, 0,
     ]);
 
     const buffer = gl.createBuffer();
     this.gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
-
     gl.enableVertexAttribArray(this.aPos);
     gl.enableVertexAttribArray(this.aTexCoord);
     gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, gl.FALSE, 16, 0);
@@ -1299,31 +986,21 @@ class WebGLRenderer {
     const gl = this.gl;
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      256,
-      256,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      null
-    );
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     return texture;
   }
 
   uploadTextures(buffer, sgbBuffer) {
-    // Check for white screen ending
     if (!window._gameEnded) {
+      window._dbgFrame = (window._dbgFrame || 0) + 1;
+      if (window._dbgFrame % 60 === 0) {
+        console.log('WebGL Pixel[0] RGBA:', buffer[0], buffer[1], buffer[2], buffer[3]);
+      }
       let isWhite = true;
       for (let i = 0; i < 160 * 144 * 4; i += 4) {
-        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) {
-          isWhite = false;
-          break;
-        }
+        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) { isWhite = false; break; }
       }
       if (isWhite) {
         window._whiteFrameCount = (window._whiteFrameCount || 0) + 1;
@@ -1337,30 +1014,9 @@ class WebGLRenderer {
     }
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.fbTexture);
-    gl.texSubImage2D(
-      gl.TEXTURE_2D,
-      0,
-      0,
-      0,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      buffer
-    );
-
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
     gl.bindTexture(gl.TEXTURE_2D, this.sgbFbTexture);
-    gl.texSubImage2D(
-      gl.TEXTURE_2D,
-      0,
-      0,
-      0,
-      SGB_SCREEN_WIDTH,
-      SGB_SCREEN_HEIGHT,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      sgbBuffer
-    );
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, SGB_SCREEN_WIDTH, SGB_SCREEN_HEIGHT, gl.RGBA, gl.UNSIGNED_BYTE, sgbBuffer);
   }
 
   renderTextures() {
@@ -1368,11 +1024,9 @@ class WebGLRenderer {
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.5, 0.5, 0.5, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-
     if (vm.canvas.useSgbBorder) {
       gl.bindTexture(gl.TEXTURE_2D, this.fbTexture);
       gl.drawArrays(gl.TRIANGLE_STRIP, 4, 4);
-
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.bindTexture(gl.TEXTURE_2D, this.sgbFbTexture);
@@ -1391,11 +1045,7 @@ class Rewind {
     this.e = e;
     this.joypadBufferPtr = this.module._joypad_new();
     this.statePtr = 0;
-    this.bufferPtr = this.module._rewind_new_simple(
-      e,
-      REWIND_FRAMES_PER_BASE_STATE,
-      REWIND_BUFFER_CAPACITY
-    );
+    this.bufferPtr = this.module._rewind_new_simple(e, REWIND_FRAMES_PER_BASE_STATE, REWIND_BUFFER_CAPACITY);
     this.module._emulator_set_default_joypad_callback(e, this.joypadBufferPtr);
   }
 
@@ -1404,46 +1054,28 @@ class Rewind {
     this.module._joypad_delete(this.joypadBufferPtr);
   }
 
-  get oldestTicks() {
-    return this.module._rewind_get_oldest_ticks_f64(this.bufferPtr);
-  }
-
-  get newestTicks() {
-    return this.module._rewind_get_newest_ticks_f64(this.bufferPtr);
-  }
+  get oldestTicks() { return this.module._rewind_get_oldest_ticks_f64(this.bufferPtr); }
+  get newestTicks() { return this.module._rewind_get_newest_ticks_f64(this.bufferPtr); }
 
   pushBuffer() {
-    if (!this.isRewinding) {
-      this.module._rewind_append(this.bufferPtr, this.e);
-    }
+    if (!this.isRewinding) this.module._rewind_append(this.bufferPtr, this.e);
   }
 
-  get isRewinding() {
-    return this.statePtr !== 0;
-  }
+  get isRewinding() { return this.statePtr !== 0; }
 
   beginRewind() {
     if (this.isRewinding) return;
-    this.statePtr = this.module._rewind_begin(
-      this.e,
-      this.bufferPtr,
-      this.joypadBufferPtr
-    );
+    this.statePtr = this.module._rewind_begin(this.e, this.bufferPtr, this.joypadBufferPtr);
   }
 
   rewindToTicks(ticks) {
     if (!this.isRewinding) return;
-    return (
-      this.module._rewind_to_ticks_wrapper(this.statePtr, ticks) === RESULT_OK
-    );
+    return this.module._rewind_to_ticks_wrapper(this.statePtr, ticks) === RESULT_OK;
   }
 
   endRewind() {
     if (!this.isRewinding) return;
-    this.module._emulator_set_default_joypad_callback(
-      this.e,
-      this.joypadBufferPtr
-    );
+    this.module._emulator_set_default_joypad_callback(this.e, this.joypadBufferPtr);
     this.module._rewind_end(this.statePtr);
     this.statePtr = 0;
   }
