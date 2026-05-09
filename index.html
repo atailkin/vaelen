@@ -1,134 +1,566 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="css/style.css" />
-    <title>okthis</title>
-    <meta name="author" content="atail" />
-    <style type="text/css">
-      body { 
-        background-color: #202850; 
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        overflow: hidden;
-        color: white;
-        font-family: sans-serif;
-      }
-      #game { position: relative; }
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SİSTEM PROTOKOLÜ: PATOLOJİ KAYITLARI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            background-color: #050505;
+            color: #45a29e; /* Shifted to a slightly more clinical, faded green/teal */
+            font-family: 'VT323', monospace;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 5px #45a29e;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.6;
+        }
+
+        .flicker {
+            animation: flicker 0.15s infinite;
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(69, 162, 158, 0.02);
+            z-index: 49;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { opacity: 0.9; }
+        }
+
+        .glitch-text {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
+
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #45a29e; }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #45a29e;
+            outline: none;
+            font-family: 'VT323', monospace;
+            text-transform: uppercase;
+            width: 100%;
+            text-shadow: 0 0 5px #45a29e;
+        }
+
+        input::placeholder { color: #1f2833; }
+
+		.crt-overlay {
+			box-shadow: inset 0 0 100px rgba(69, 162, 158, 0.1);
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			pointer-events: none;
+			z-index: 48;
+		}
+
+		.tv-shell {
+			position: relative;
+			width: min(100%, 1000px);
+			height: 85vh;
+			margin: 0 auto;
+			/* Sharp, thin, industrial border instead of a thick TV casing */
+			border: 2px solid #1f2833; 
+			border-top: none; /* Removed top border to attach the header */
+			background: #050505;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+			z-index: 10;
+			display: flex;
+			flex-direction: column;
+			/* Ensure corners are sharp, not rounded */
+			border-radius: 0; 
+		}
+
+		/* Repurposed the TV shell ::before to act as an OS Window Header */
+		.tv-shell::before {
+			content: 'MEGACORP OS // YEREL PATOLOJİ TERMİNALİ';
+			display: block;
+			background: #45a29e;
+			color: #050505;
+			padding: 4px 12px;
+			font-size: 1.2rem;
+			font-weight: bold;
+			letter-spacing: 2px;
+			position: relative;
+			top: 0;
+			left: 0;
+			width: 100%;
+			transform: none; /* Removes the old centering */
+			border-radius: 0;
+			height: auto;
+			box-shadow: none;
+		}
+
+		/* Hide the bottom fake TV reflection entirely */
+		.tv-shell::after { 
+			display: none; 
+		}
+
+		.tv-panel {
+			position: relative;
+			border: none;
+			/* Inner screen is purely flat and functional */
+			border-top: 1px solid #1f2833;
+			background: rgba(0,0,0,0.92);
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			border-radius: 0; /* Sharp corners */
+			transition: transform 0.8s ease-in, opacity 0.8s ease-in, filter 0.8s ease-in;
+		}
+
+		.tv-shell.power-off .tv-panel {
+			transform: scaleY(0.15) translateY(35%);
+			opacity: 0.15;
+			filter: blur(1px);
+		}
+
+        #app {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            font-size: clamp(1rem, 2vw, 1.4rem);
+        }
+
+        .tv-screen-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at center, rgba(69, 162, 158, 0.08), transparent 40%);
+            z-index: 5;
+        }
+
+        .tv-close-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #45a29e;
+            background: rgba(0,0,0,0.92);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+            z-index: 60;
+        }
+
+        .tv-close-overlay.active { opacity: 1; }
+
+        .tv-close-screen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.8));
+            mix-blend-mode: overlay;
+            opacity: 0.45;
+            animation: tvstatic 0.15s infinite alternate;
+            z-index: 59;
+        }
+
+        .tv-close-content {
+            position: relative;
+            z-index: 61;
+            max-width: 90%;
+        }
+
+        @keyframes tvstatic {
+            from { opacity: 0.35; }
+            to { opacity: 0.55; transform: translateY(-2px); }
+        }
+
+        .btn-terminal {
+            border: 1px solid #45a29e;
+            background: rgba(69, 162, 158, 0.1);
+            color: #45a29e;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-terminal:hover {
+            background: #45a29e;
+            color: #000;
+            box-shadow: 0 0 15px #45a29e;
+        }
+
+        .btn-terminal:disabled {
+            border-color: #1f2833;
+            color: #1f2833;
+            background: transparent;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Megacorp branding color override */
+        .neon-pink {
+            color: #ff003c;
+            text-shadow: 0 0 8px #ff003c;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
 
-    <div id="game">
-      <canvas id="mainCanvas" width="256" height="224">No Canvas Support</canvas>
+    <div class="scanlines"></div>
+    <div class="flicker"></div>
+    <div class="crt-overlay"></div>
+
+    <div class="tv-shell">
+        <div class="tv-panel">
+            <div id="app"></div>
+            <div class="tv-screen-glow"></div>
+        </div>
     </div>
 
-    <div id="controller">
-      <div id="controller_dpad">
-        <div id="controller_left"></div>
-        <div id="controller_right"></div>
-        <div id="controller_up"></div>
-        <div id="controller_down"></div>
-      </div>
-      <div id="controller_select" class="capsuleBtn">Select</div>
-      <div id="controller_start" class="capsuleBtn">Start</div>
-      <div id="controller_b" class="roundBtn">B</div>
-      <div id="controller_a" class="roundBtn">A</div>
-    </div>
-
-    <!-- Hidden Audio Element -->
-    <audio id="bgMusic" src="music.mp3" loop></audio>
-
     <script>
-      // 1. Controls configuration
-      const customControls = {
-        "up": ["ArrowUp", "w"],
-        "down": ["ArrowDown", "s"],
-        "left": ["ArrowLeft", "a"],
-        "right": ["ArrowRight", "d"],
-        "a": ["e"],
-        "b": ["q"],
-        "start": ["Enter"],
-        "select": ["Shift"]
-      };
+        const app = document.getElementById('app');
 
-      // 2. Audio Logic attached to "Enter" and the Start button
-      const music = document.getElementById('bgMusic');
-      const startButton = document.getElementById('controller_start');
-      let musicStarted = false;
+        // --- LORE DATA (VAELEN'S PATHOLOGY NOTES) ---
+        const loreData = {
+            log1: [
+                "GÖNDEREN: BAŞPATOLOG VAELEN",
+                "KONU: PATOLOJİ NOT DEFTERİ, GÜN 12",
+                "",
+                "Hastalığın yayılımı hızlanıyor. Kasaba karantinaya alınmış gibi ama dışarıdan kimse kapıları kilitlemedi. Sadece bizi kendi halimize bıraktılar.",
+                "",
+                "Bugüne kadar gözlemlediğim semptomlar tutarlı:",
+                "- Aşama 1: Ellerde şiddetli titreme",
+                "- Aşama 2: Gözlerde bozulma ve görme kaybı",
+                "- Aşama 3: Tam bedensel çöküş",
+                "",
+                "Geçen hafta bir komşumuzu daha kaybettik. Diğer komşu korkudan kapısını açmıyor.",
+                "Hasta olanlar yardım için bana geliyor ama onlara verebileceğim hiçbir şey yok.",
+                "Bu lanet hastalığa henüz bir isim bile veremedik."
+            ],
+            log2: [
+                "GÖNDEREN: KRUSH CORP",
+                "KONU: YORGUN ELLER Mİ? BULANIK BİR GÖRÜŞ MÜ? Tek ihtiyacın olan bir KRUSH!",
+                "",
+                "%100 Sentetik Karbonat. %200 Saf Neşe.",
+                "",
+                "Bugünden geleceği tadabilecekken neden yarın için endişelenesiniz ki? Unutmayın, üretken bir vatandaş mutlu bir vatandaştır. Öyleyse bir kutu kapın, köpükleri hissedin ve karanlığı aydınlatın!",
+                "",
+                "    [ cygarKRUSH İÇİN! SERİNLE VE CANLAN! ]",
+                "",
+                "Hemen şimdi satın alın, sadece 3.49$."
+            ],
+            log3: [
+                "GÖNDEREN: BAŞPATOLOG VAELEN",
+                "KONU: BAŞKA SEÇENEK KALMADI",
+                "",
+                "Kendi ellerimde ilk titremeleri hissetmeye başladım.",
+                "Zamanım tükeniyor.",
+                "",
+                "Bugün sokağa çıktım. Her yer ölüm ile dolu. Bir kedi buldum... Onu masaya yatırıp incelemem gerekiyor.",
+                "",
+                "Bunu yapmaktan nefret ediyorum ama başka seçenek kalmadı. Tümör, virüs, bakteri her neyse bu hastalık, o masada cevabı bulmalıyım.",
+                "",
+                "Cevabı bulmalıyım.",
+                "Ne pahasına olursa olsun."
+            ]
+        };
 
-      function playAudio(e) {
-        // Trigger if it's a click, or if the key pressed is "Enter"
-        if (!musicStarted && (e.type === 'click' || e.key === 'Enter')) {
-          music.play().then(() => {
-            musicStarted = true; // Prevents it from firing multiple times
-            // Clean up event listeners to keep things efficient
-            window.removeEventListener('keydown', playAudio);
-            startButton.removeEventListener('click', playAudio);
-          }).catch(err => console.error("Audio playback failed:", err));
-        }
-      }
+        // --- STATE ---
+        let unlockedFiles = { log1: false, log2: false, log3: false };
+        let isTyping = false;
 
-      // Listen for the "Enter" key on the keyboard
-      window.addEventListener('keydown', playAudio);
-      // Listen for a click/tap on the virtual Start button
-      startButton.addEventListener('click', playAudio);
-      
-      // Keep focus on the window so keyboard controls work immediately
-      window.focus();
-    </script>
+        let loginFocusListener = null;
+        let audioCtx = null;
 
-    <!-- 3. Emulator Scripts -->
-    <script src="binjgb.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/debugger.js"></script>
-    
-    <!-- Redirect to gbgame.html when game ends (white frame detection) -->
-    <script>
-      let redirected = false;
-      let whiteFrameCount = 0;
-      setInterval(() => {
-        if (redirected) return;
-        const canvas = document.querySelector('canvas');
-        if (!canvas) return;
-        try {
-          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-          if (gl) {
-            const pixels = new Uint8Array(4);
-            // Read from center of screen instead of top-left corner
-            gl.readPixels(128, 112, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-            console.log('Pixel:', pixels, 'White frames:', whiteFrameCount);
-            if (pixels[0] === 255 && pixels[1] === 255 && pixels[2] === 255) {
-              whiteFrameCount++;
-            } else {
-              whiteFrameCount = 0;
+        function getAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
-            if (whiteFrameCount >= 3) {
-              redirected = true;
-              console.log('White frame detection triggered, redirecting...');
-              setTimeout(() => {
-                window.location.href = 'gbgame.html';
-              }, 1000);
+            return audioCtx;
+        }
+
+        function playBeep(freq = 800, duration = 0.05, vol = 0.05) {
+            try {
+                const ctx = getAudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+                gainNode.gain.setValueAtTime(vol, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        async function typeText(element, textArray, speed = 20) {
+            isTyping = true;
+            element.innerHTML = '';
+
+            for (let i = 0; i < textArray.length; i++) {
+                const line = textArray[i];
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'min-h-[1.5rem] mb-1';
+                
+                // Highlight cygarKRUSH branding in pink
+                if(line.includes("cygarKRUSH")) {
+                    lineDiv.innerHTML = `<span class="neon-pink">${line}</span>`;
+                    element.appendChild(lineDiv);
+                    playBeep(400, 0.1, 0.05);
+                    await sleep(speed * 10);
+                } else {
+                    element.appendChild(lineDiv);
+                    for (let j = 0; j < line.length; j++) {
+                        lineDiv.innerHTML += line.charAt(j);
+                        if (j % 3 === 0) playBeep(600 + Math.random() * 200, 0.02, 0.02);
+                        app.scrollTop = app.scrollHeight;
+                        await sleep(speed);
+                    }
+                }
+                await sleep(speed * 10);
             }
-          }
-        } catch(e) {
-          console.error('White frame detection error:', e);
+            isTyping = false;
         }
-      }, 500);
-    </script>
-    <!-- Redirect to gbgame.html when the "P" key is pressed -->
-    <script>
-      document.addEventListener("keydown", function (e) {
-        if (e.key && e.key.toLowerCase() === "p" && !e.ctrlKey && !e.altKey && !e.metaKey) {
-          window.location.href = "gbgame.html";
+
+        function removeLoginFocusListener() {
+            if (loginFocusListener) {
+                document.removeEventListener('click', loginFocusListener);
+                loginFocusListener = null;
+            }
         }
-      });
+
+        // --- VIEWS ---
+
+        async function renderBoot() {
+            app.innerHTML = `<div id="bootText"></div><span class="cursor-blink">_</span>`;
+            const bootText = document.getElementById('bootText');
+
+            const bootSequence = [
+                "SİSTEM BAŞLATILIYOR...",
+                "SAAT MEKANİZMASI: SENKRONİZE EDİLDİ",
+                "AĞ BAĞLANTISI: ÇEVRİMDIŞI (YEREL AĞ KULLANILIYOR)",
+                "PATOLOJİ_VERİTABANI_v3.4 YÜKLENİYOR...",
+                "UYARI: BİYOLOJİK TEHLİKE TESPİT EDİLDİ.",
+                "ŞİRKET PROTOKOLLERİ DEVRE DIŞI.",
+                "KİMLİK DOĞRULAMASI GEREKLİ."
+            ];
+
+            await typeText(bootText, bootSequence, 30);
+            await sleep(500);
+            renderLogin();
+        }
+
+        function renderLogin() {
+            removeLoginFocusListener();
+
+            app.innerHTML = `
+                <div class="mb-4">
+                    <p class="text-red-500 glitch-text font-bold">&gt;&gt;&gt; MERKEZİ VERİTABANINA BAĞLANTI KOPTU &lt;&lt;&lt;</p>
+                    <br>
+                    <p>YEREL YEDEKLEME DEVREDE.</p>
+                    <p>LÜTFEN PERSONEL KİMLİĞİNİZİ GİRİN.</p>
+                </div>
+                <div class="flex items-center mt-4">
+                    <span class="mr-2">KULLANICI: </span>
+                    <input type="text" id="loginInput" autocomplete="off" autofocus class="border-b border-green-500 bg-transparent w-48 text-green-500 outline-none">
+                    <span class="cursor-blink ml-1">_</span>
+                </div>
+                <div id="loginError" class="text-red-500 mt-4 hidden">YETKİ REDDEDİLDİ. GEÇERSİZ KİMLİK.</div>
+            `;
+
+            const input = document.getElementById('loginInput');
+            input.focus();
+
+            loginFocusListener = () => {
+                const el = document.getElementById('loginInput');
+                if (el) el.focus();
+            };
+            document.addEventListener('click', loginFocusListener);
+
+            input.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter') {
+                    const val = input.value.trim().toLowerCase();
+                    if (val === 'vaelen') {
+                        removeLoginFocusListener();
+                        playBeep(1200, 0.1, 0.1);
+                        app.innerHTML = `<div class="text-green-400 mt-10">KİMLİK DOĞRULANDI. GÜNAYDIN, BAŞPATOLOG VAELEN.<br>KİŞİSEL NOTLAR YÜKLENİYOR...</div>`;
+                        await sleep(1500);
+                        renderDashboard();
+                    } else {
+                        playBeep(200, 0.3, 0.1);
+                        const errEl = document.getElementById('loginError');
+                        if (errEl) errEl.classList.remove('hidden');
+                        input.value = '';
+                    }
+                }
+            });
+        }
+
+        function renderDashboard() {
+            const allUnlocked = unlockedFiles.log1 && unlockedFiles.log2 && unlockedFiles.log3;
+
+            let html = `
+                <div class="border-b border-green-700 pb-4 mb-6">
+                    <h1 class="text-3xl font-bold glitch-text">YEREL PATOLOJİ VERİTABANI</h1>
+                    <p class="text-sm">KULLANICI: VAELEN | DURUM: <span class="${allUnlocked ? 'text-red-500' : 'text-yellow-500'}">${allUnlocked ? 'KRİTİK HATA' : 'BEKLEMEDE'}</span></p>
+                </div>
+                <p class="mb-6">Kişisel not defteri girişlerini inceleyin.</p>
+                <div class="flex flex-col gap-4 max-w-md">
+                    <button onclick="openLog('log1')" class="btn-terminal p-4 text-left flex justify-between items-center">
+                        <span>[1] GÜN 12 (İLK BELİRTİLER)</span>
+                        <span class="text-xs ${unlockedFiles.log1 ? 'text-green-500' : 'text-gray-400'}">[ ${unlockedFiles.log1 ? 'OKUNDU' : 'YENİ'} ]</span>
+                    </button>
+                    <button onclick="openLog('log2')" class="btn-terminal p-4 text-left flex justify-between items-center">
+                        <span>[2] cygarKRUSH!</span>
+                        <span class="text-xs ${unlockedFiles.log2 ? 'text-green-500' : 'text-gray-400'}">[ ${unlockedFiles.log2 ? 'OKUNDU' : 'YENİ'} ]</span>
+                    </button>
+                    <button onclick="openLog('log3')" class="btn-terminal p-4 text-left flex justify-between items-center">
+                        <span>[3] SON ÇARE</span>
+                        <span class="text-xs ${unlockedFiles.log3 ? 'text-green-500' : 'text-gray-400'}">[ ${unlockedFiles.log3 ? 'OKUNDU' : 'YENİ'} ]</span>
+                    </button>
+                </div>
+            `;
+
+            if (allUnlocked) {
+                html += `
+                    <div class="mt-12 p-6 border-2 border-red-500 bg-red-900 bg-opacity-20 animate-pulse">
+                        <h2 class="text-2xl font-bold text-red-400 mb-2">&gt;&gt;&gt; VİTAL SİSTEMLER KRİTİK &lt;&lt;&lt;</h2>
+                        <p>Sistemde "INTRUDER2" kullanıcısı tespit edildi.</p>
+                        <p>SİSTEM KAPANMAYA HAZIR.</p>
+                        <br>
+                        <p class="text-3xl glitch-text text-red-500">ZAMAN TÜKENİYOR, VAELEN.</p>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = html;
+
+            const existingOverlay = document.getElementById('tvCloseOverlay');
+            if (existingOverlay) existingOverlay.remove();
+
+            if (allUnlocked) {
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            triggerTvCloseSequence();
+                        });
+                    });
+                }, 5000);
+            }
+        }
+
+        function triggerTvCloseSequence() {
+            const container = document.querySelector('.tv-shell');
+            if (!container || document.getElementById('tvCloseOverlay')) return;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'tvCloseOverlay';
+            overlay.className = 'tv-close-overlay';
+            overlay.innerHTML = `
+                <div class="tv-close-screen"></div>
+                <div class="tv-close-content">
+                    <div class="text-3xl glitch-text text-red-500 mb-3">SİSTEM ÇÖKÜYOR...</div>
+                    <div class="text-sm text-red-200">BİLİNÇ KAYBI TESPİT EDİLDİ.</div>
+                    <div class="mt-4 text-xs uppercase tracking-[0.3em]">SİMÜLASYONA GEÇİLİYOR</div>
+                </div>
+            `;
+            container.appendChild(overlay);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    overlay.classList.add('active');
+                });
+            });
+
+            setTimeout(() => {
+                container.classList.add('power-off');
+                const content = overlay.querySelector('.tv-close-content');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="text-3xl font-bold text-red-500">⚠️ BAĞLANTI KESİLDİ ⚠️</div>
+                        <div class="mt-2 text-sm text-gray-400">Kasabaya aktarılıyor...</div>
+                    `;
+                }
+                
+                // This is the magic line that transitions to your Bitsy game
+                setTimeout(() => {
+                    window.location.href = 'gbgame.html';
+                }, 2000);
+
+            }, 3000);
+        }
+
+        async function openLog(logName) {
+            if (isTyping) return;
+
+            app.innerHTML = `
+                <div class="mb-6 flex justify-between items-center border-b border-green-700 pb-2">
+                    <span class="text-sm text-gray-400">ŞİFRELİ VERİ DEŞİFRE EDİLİYOR...</span>
+                </div>
+                <div id="logContent" class="whitespace-pre-wrap mb-8"></div>
+                <button id="backBtn" class="btn-terminal py-2 px-6 hidden" onclick="renderDashboard()">[ GERİ DÖN ]</button>
+            `;
+
+            const logContent = document.getElementById('logContent');
+            const backBtn = document.getElementById('backBtn');
+
+            await typeText(logContent, loreData[logName], 15);
+
+            unlockedFiles[logName] = true;
+            backBtn.classList.remove('hidden');
+        }
+
+        window.onload = renderBoot;
     </script>
-  </body>
+</body>
 </html>
