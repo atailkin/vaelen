@@ -25,12 +25,19 @@
       <div id="controller_b" class="roundBtn">B</div>
       <div id="controller_a" class="roundBtn">A</div>
     </div>
+    <!-- Hidden Audio Element -->
+    <audio id="bgMusic" src="music.mp3" loop></audio>
     <script>
       const customControls = {"up":["ArrowUp","w"],"down":["ArrowDown","s"],"left":["ArrowLeft","a"],"right":["ArrowRight","d"],"a":["e"],"b":["q"],"start":["Enter"],"select":["Shift"]}
     </script>
     <script src="binjgb.js"></script>
     <script src="js/script.js"></script>
     <script src="js/debugger.js"></script>
+    <script>
+      // Start background music when page loads
+      const music = document.getElementById('bgMusic');
+      music.play().catch(err => console.error("Audio playback failed:", err));
+    </script>
     <script>
       let redirected = false;
       let whiteFrameCount = 0;

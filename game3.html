@@ -183,7 +183,11 @@
   <div id="log">
     <div class="entry">
       <span class="entry-label">SİSTEM</span>
-      <span class="entry-text system">DECORATIFTEXT1.</span>
+      <span class="entry-text system">VAELEN ÖLÜM SONRASI KALKIYOR VE KARŞISINDA VEİDAN'I VE ÖLDÜRDÜĞÜ KEDİYİ GÖRÜYOR.</span>
+    </div>
+    <div class="entry">
+      <span class="entry-label">VEİDAN</span>
+      <span class="entry-text god">Evet öldün.<br>Bir hiç uğruna kendini o diğerleri gibi hastalığa feda ettin.<br>Senin ölümünden sonra binlerce kişi daha öldü<br>yaptıkların hiç bir şeye yaramadı<br>hayatın bir hiç uğruna geçti<br>Şuan düşüncelerinin ne kdr karmaşık olduğunu farkedebiliyorum<br>Öldün ve gözlerini açtığın anda kendini atolyende benimle birlikte buldun<br>Garip olmalı...<br>Yanlış anlama tanrı veya ona yakın herhangi bir şey değilim<br>En azından sizin bildiğiniz tanrı değilim<br>Ondan daha üstün bir yaratığım, onun asla erişemeyeceği bir şey<br>Egolu biri değilim ya da sana kendimi övmeye çalışmıyorum<br>sadece karşında olan şeyi tanımlamanda yardımcı oluyorum</span>
     </div>
   </div>
 
@@ -212,9 +216,18 @@
 
 <script>
   const questions = {
-    1: { q: "Q1", a: "A1" },
-    2: { q: "Q2", a: "A2" },
-    3: { q: "Q3", a: "A3" }
+    1: { 
+      q: "Bunca zamandır olan her şeyi görüyor muydun? Bunca ölümleri, acıları, insanların kayıplarını.", 
+      a: "Merak etme hepsini bizzat gördüm<br>Senin acını seninle birlikte hissettim<br>Onların hayatları bittiğinde acılarını bende tattım" 
+    },
+    2: { 
+      q: "Artık daha fazla savaşmak istemiyorum, elimden geleni yaptım, hiç bir şey ile sonuçlanmadı, ben mağlubiyetimi kabul ediyorum.", 
+      a: "Her ne kadar bulanık olsa da, Veidan'ın gözlerinin hayal kırıklığı içinde düştüğünü görebiliyorsun<br>Boğazında çürümüş bir tat bırakmadı mı?<br>Bir kere daha denemek istemiyor musun?<br>Başarıya ulaşana dek tekrar ve tekrar uğraşmak istemiyor musun?<br>Zaten seni sen yapan ve bu hale getiren şeyler, deneyimin olmadı mı, çabaların olmadı mı?<br>O halde kendine neden bir şeyler katmak istemiyorsun, neden gerçek benliğini görmek istemiyorsun.<br>Neden gerçek seni öğrenmek istemiyorsun?" 
+    },
+    3: { 
+      q: "Sahte kimlikli bir tanrıdan bir şans daha? Dürüst olmak gerekirse geçmiş hayatımdan memnun olamadım, hayal kırıklığı ile ayrıldım. Belki bu sefer bazı şeyler farklı olur. Söylesene \"tanrı\" neden ben?", 
+      a: "Milyonlarca hayatı ellerimden geçirdim<br>Ama yine de senin hikayen beni eğlendirdi, senin bu mağlubiyetin bana zevk verdi.<br>Neden özellikle sen olduğun konusunda bir şey demeyeceğim çünkü, bu oyunun gidişatını bozardı.<br>O kısmı öğrenmek sana kalmış.<br>Bunu şuan söylersem o zaman oyunu oynamanın ne anlamı kalırdı ki?<br>öğrenecek çok şeyin var. Konuşacak çok fazla kişi var, dinleyebileceğin hikayeler sınırsız. Edinebileceğin deneyimler sonsuz.<br>Sana bir şans veriyorum ki benim izime çık ve potansiyelini öğren." 
+    }
   };
 
   const answered = new Set();
@@ -258,7 +271,7 @@
 
   function endConversation() {
     setTimeout(() => {
-      addEntry('SİSTEM', 'ENDTEXT.', 'system');
+      addEntry('SİSTEM', '*END TRANSMISSION*', 'system');
       setTimeout(() => {
         document.getElementById('choices').style.opacity = '0.2';
         document.getElementById('choices').style.pointerEvents = 'none';
