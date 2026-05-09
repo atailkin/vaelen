@@ -12,17 +12,18 @@
     background: #ffffff;
     color: #111111;
     font-family: 'Share Tech Mono', monospace;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    justify-content: flex-start;
+    overflow: auto;
   }
 
   #container {
-    width: 640px;
-    max-width: 95vw;
+    width: 840px;
+    max-width: 98vw;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -31,8 +32,8 @@
   #header {
     border: 1px solid #111;
     border-bottom: none;
-    padding: 8px 14px;
-    font-size: 10px;
+    padding: 10px 18px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     color: #555;
     display: flex;
@@ -43,13 +44,13 @@
 
   #log {
     border: 1px solid #111;
-    min-height: 320px;
-    max-height: 320px;
+    min-height: 420px;
+    max-height: 420px;
     overflow-y: auto;
-    padding: 18px 14px;
+    padding: 20px 18px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
     scrollbar-width: none;
     opacity: 0;
     animation: fadein 0.5s ease 0.4s forwards;
@@ -65,14 +66,14 @@
   }
 
   .entry-label {
-    font-size: 9px;
-    letter-spacing: 0.2em;
+    font-size: 11px;
+    letter-spacing: 0.18em;
     color: #aaa;
   }
 
   .entry-text {
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.8;
     color: #111;
   }
 
@@ -80,13 +81,13 @@
     font-family: 'IM Fell English', serif;
     font-style: italic;
     color: #333;
-    font-size: 14px;
+    font-size: 17px;
   }
 
   .entry-text.system {
-    font-size: 11px;
+    font-size: 13px;
     color: #888;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
   }
 
   #divider {
@@ -99,21 +100,21 @@
   #choices {
     border: 1px solid #111;
     border-top: none;
-    padding: 14px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     opacity: 0;
     animation: fadein 0.5s ease 0.8s forwards;
-    min-height: 120px;
+    min-height: 140px;
   }
 
   .choice {
     display: flex;
     align-items: baseline;
-    gap: 10px;
+    gap: 14px;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 6px 0;
     transition: opacity 0.2s;
   }
 
@@ -125,43 +126,28 @@
   }
 
   .choice-key {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     color: #888;
-    min-width: 20px;
+    min-width: 24px;
   }
 
   .choice-text {
-    font-size: 13px;
+    font-size: 16px;
     color: #111;
   }
 
   #footer {
     border: 1px solid #111;
     border-top: none;
-    padding: 6px 14px;
-    font-size: 9px;
+    padding: 10px 18px;
+    font-size: 11px;
     letter-spacing: 0.12em;
     color: #bbb;
     opacity: 0;
     animation: fadein 0.5s ease 1s forwards;
     display: flex;
     justify-content: space-between;
-  }
-
-  #fade-overlay {
-    position: fixed;
-    inset: 0;
-    background: white;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 2s ease;
-    z-index: 999;
-  }
-
-  #fade-overlay.active {
-    opacity: 1;
-    pointer-events: all;
   }
 
   @keyframes fadein {
@@ -171,8 +157,6 @@
 </style>
 </head>
 <body>
-
-<div id="fade-overlay"></div>
 
 <div id="container">
   <div id="header">
@@ -285,13 +269,6 @@
   function endConversation() {
     setTimeout(() => {
       addEntry('SİSTEM', '*END TRANSMISSION*', 'system');
-      setTimeout(() => {
-        document.getElementById('choices').style.opacity = '1';
-        document.getElementById('choices').style.pointerEvents = 'none';
-        setTimeout(() => {
-          document.getElementById('fade-overlay').classList.add('active');
-        }, 1500);
-      }, 800);
     }, 800);
   }
 
