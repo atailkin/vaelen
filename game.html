@@ -446,8 +446,6 @@ body {
 
 <!-- SCRIPTS -->
 <script>
-var isPlayerEmbeddedInEditor = false;
-
 function startExportedGame() {
 	var gameCanvas = document.getElementById("game");
 	var gameData = document.getElementById("exportedGameData").text.slice(1);
@@ -459,6 +457,8 @@ function startExportedGame() {
 
 <!-- system -->
 <script>
+var isPlayerEmbeddedInEditor = false;
+
 function InputSystem() {
 	var self = this;
 
