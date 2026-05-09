@@ -883,7 +883,7 @@ class Canvas2DRenderer {
       }
       let isWhite = true;
       for (let i = 0; i < 160 * 144 * 4; i += 4) {
-        if (buffer[i] < 250 || buffer[i+1] < 250 || buffer[i+2] < 250) { isWhite = false; break; }
+        if (buffer[i] < 245 || buffer[i+1] < 245|| buffer[i+2] < 245) { isWhite = false; break; }
       }
       if (isWhite) {
         window._whiteFrameCount = (window._whiteFrameCount || 0) + 1;
