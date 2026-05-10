@@ -148,6 +148,50 @@
     animation: fadein 0.5s ease 1s forwards;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  #volume-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #volume-label {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: #bbb;
+    min-width: 48px;
+  }
+
+  #volume-slider {
+    width: 120px;
+    height: 4px;
+    cursor: pointer;
+    appearance: none;
+    background: linear-gradient(to right, #111 0%, #111 var(--percent, 50%), #ccc var(--percent, 50%), #ccc 100%);
+    border: none;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  #volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #111;
+    border: 1px solid #111;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  #volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #111;
+    border: 1px solid #111;
+    cursor: pointer;
+    border-radius: 2px;
   }
 
   @keyframes fadein {
@@ -194,7 +238,10 @@
 
   <div id="footer">
     <span>KLAVYE: 1 · 2 · 3</span>
-    <span id="answered-count">0/3 TAMAMLANDI</span>
+    <div id="volume-control">
+      <label id="volume-label">VOLUME</label>
+      <input type="range" id="volume-slider" min="0" max="100" value="50">
+    </div>
   </div>
 </div>
 
@@ -278,6 +325,21 @@
     if (e.key === '2') choose(2);
     if (e.key === '3') choose(3);
   });
+
+  // volume control
+  const volumeSlider = document.getElementById('volume-slider');
+  const bgm = document.getElementById('bgm');
+  
+  volumeSlider.addEventListener('input', (e) => {
+    const volume = e.target.value / 100;
+    bgm.volume = volume;
+    // Update the gradient background for visual feedback
+    e.target.style.setProperty('--percent', e.target.value + '%');
+  });
+
+  // Set initial volume and gradient
+  bgm.volume = 0.5;
+  volumeSlider.style.setProperty('--percent', '50%');
 </script>
 </body>
 <audio id="bgm" src="merrygo.mp3" loop></audio>
