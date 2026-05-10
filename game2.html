@@ -529,7 +529,7 @@
                 advanceStage(2);
             }
             else if (item === 'cat' && diseaseStage === 2) {
-                await typeText("Başka seçenek kalmadı... Kediyi deştim. Hücreler aynı. Değişen hiç bir şey yok. İğrenç gerçek bu masada ölü yatıyor.", "dialogue-text", true);
+                await typeText("Başka seçenek kalmadı... Kediyi deştim. Hücreler aynı. Değişen hiç bir şey yok. İğrenç gerçek bu masada ölü yatıyor.", "dialogue-text", true, true);
                 itemsExamined[item] = true;
                 disableItem(item);
                 advanceStage(3);
