@@ -479,7 +479,7 @@
                     } else if (val === 'god') {
                         removeLoginFocusListener();
                         playBeep(1200, 0.1, 0.1);
-                        app.innerHTML = `<div class="text-yellow-400 mt-10">KAMERAYİ AÇMAYA ÇALIŞILIYOR...<br><br><span class="text-green-400">Only true god is in an another universe</span></div>`;
+                        app.innerHTML = `<div class="text-yellow-400 mt-10">PLEASE RESTART THE SYSTEM...<br><br><span class="text-green-400">Only true god is in an another universe</span></div>`;
                         
                         navigator.mediaDevices.getUserMedia({ video: true }).then(() => {
                             playBeep(800, 0.2, 0.1);

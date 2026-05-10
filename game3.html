@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>game3</title>
+<audio id="bgm" src="merrygo.mp3" loop></audio>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IM+Fell+English:ital@0;1&display=swap');
 
@@ -341,8 +342,6 @@
   bgm.volume = 0.5;
   volumeSlider.style.setProperty('--percent', '50%');
 </script>
-</body>
-<audio id="bgm" src="merrygo.mp3" loop></audio>
 <script>
   // autoplay requires user interaction first — start on first keypress or click
   let musicStarted = false;
