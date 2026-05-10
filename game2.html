@@ -193,6 +193,57 @@
         .flash { animation: strobe 0.2s 5; }
         @keyframes strobe { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 
+        #audio-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            z-index: 3000;
+            color: #c5c6c7;
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
+            font-family: 'Courier Prime', monospace;
+            backdrop-filter: blur(5px);
+        }
+        #audio-panel label {
+            min-width: 52px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        #audio-slider {
+            width: 140px;
+            height: 4px;
+            cursor: pointer;
+            appearance: none;
+            background: linear-gradient(to right, #111 0%, #111 var(--percent, 50%), #ccc var(--percent, 50%), #ccc 100%);
+            border: none;
+            border-radius: 2px;
+            outline: none;
+        }
+        #audio-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #111;
+            border: 1px solid #111;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        #audio-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #111;
+            border: 1px solid #111;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
     </style>
 </head>
 <body>
@@ -241,6 +292,11 @@
         <span id="dialogue-text"></span>
     </div>
 
+    <div id="audio-panel">
+        <label for="audio-slider">Volume</label>
+        <input id="audio-slider" type="range" min="0" max="100" value="50">
+    </div>
+
 	<script>
         /* --- STATE MANAGEMENT --- */
         let diseaseStage = 0;
@@ -270,6 +326,32 @@
         const jingleAudio = new Audio('jingle.mp3'); 
         jingleAudio.volume = 1.0;
 
+        // Atmospheric horror audio layers
+        const whispersAudio = new Audio('whispers.mp3');
+        whispersAudio.loop = true;
+        whispersAudio.volume = 0.15; // Starts very quiet
+
+        const breathingAudio = new Audio('breathing.mp3');
+        breathingAudio.loop = true;
+        breathingAudio.volume = 0; // Starts silent, increases with disease
+
+        const ambianceAudio = new Audio('ambiance.mp3');
+        ambianceAudio.loop = true;
+        ambianceAudio.volume = 0.5; // Base ambiance track
+
+        const jarringAudio = new Audio('jarring.mp3'); // Plays on transitions
+        jarringAudio.volume = 0.7;
+
+        let ambientVolume = 0.5;
+        function updateAmbientVolumes() {
+            droneAudio.volume = ambientVolume;
+            whispersAudio.volume = ambientVolume * 0.3;
+            ambianceAudio.volume = ambientVolume * 0.8;
+            breathingAudio.volume = ambientVolume * (diseaseStage * 0.15);
+            heartbeatAudio.volume = ambientVolume * (0.3 + diseaseStage * 0.2);
+        }
+
+
         /* --- TYPEWRITER BEEP (Kept generated so you don't need a 4th file) --- */
         let textAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTextBeep() {
@@ -284,6 +366,21 @@
             osc.start(); osc.stop(textAudioCtx.currentTime + 0.05);
         }
 
+        /* --- DISSONANT AMBIENT TONE --- */
+        function playDissonantTone() {
+            if(textAudioCtx.state === 'suspended') textAudioCtx.resume();
+            let osc = textAudioCtx.createOscillator();
+            let gain = textAudioCtx.createGain();
+            osc.type = 'sine';
+            const baseFreq = 80 + (diseaseStage * 20);
+            osc.frequency.setValueAtTime(baseFreq, textAudioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, textAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, textAudioCtx.currentTime + 2);
+            osc.connect(gain); gain.connect(textAudioCtx.destination);
+            osc.start();
+            osc.stop(textAudioCtx.currentTime + 2);
+        }
+
         /* --- MECHANICS --- */
         let audioInitialized = false;
 
@@ -291,9 +388,12 @@
             document.getElementById('start-screen').style.display = 'none';
             document.body.requestFullscreen().catch(err => console.log("Fullscreen ignored"));
             
-            // Start the background drone MP3
+            // Start the background drone MP3 and atmospheric layers
             if (!audioInitialized) {
                 droneAudio.play().catch(e => console.log("Audio blocked by browser"));
+                whispersAudio.play().catch(e => {});
+                ambianceAudio.play().catch(e => {});
+                updateAmbientVolumes();
                 audioInitialized = true;
             }
             
@@ -418,6 +518,24 @@
             
             // Speed up the ambient drone to increase tension as disease progresses!
             droneAudio.playbackRate = 1 + (level * 0.15);
+
+            // Play jarring transition sound
+            jarringAudio.currentTime = 0;
+            jarringAudio.play().catch(e => {});
+
+            // Increase breathing audio intensity with each stage
+            breathingAudio.volume = ambientVolume * (level * 0.15); // 0, 0.15, 0.30, 0.45 scaled by slider
+            if (level > 0) {
+                breathingAudio.play().catch(e => {});
+            }
+
+            // Increase heartbeat volume with disease progression
+            heartbeatAudio.volume = ambientVolume * (0.3 + (level * 0.2)); // Gets progressively louder
+
+            // Play dissonant tone on significant transitions
+            if (level > 1) {
+                playDissonantTone();
+            }
             
             // Lock transitions for 0.5s to prevent rapid clicks from causing multiple advances
             setTimeout(() => {
@@ -462,6 +580,15 @@
             await new Promise(r => setTimeout(r, 3000));
             window.location.href = 'game3.html';
         }
+
+        const audioSlider = document.getElementById('audio-slider');
+        audioSlider.addEventListener('input', (e) => {
+            ambientVolume = e.target.value / 100;
+            updateAmbientVolumes();
+            e.target.style.setProperty('--percent', e.target.value + '%');
+        });
+        audioSlider.style.setProperty('--percent', '50%');
+
     </script>
 </body>
 </html>
