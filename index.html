@@ -349,8 +349,8 @@
             playBeep(80, 0.5, 0.2);
             app.innerHTML = `
                 <div class="text-red-500 glitch-text font-bold">!!! SİSTEM HATASI !!!</div>
-                <div class="mt-4">ÇEKİRDEK BELLEK YIĞILDI. YEREL KORUMA DEVREYE GİRİYOR...</div>
-                <div class="mt-2 text-xs text-yellow-300">(Bu bir sistem çöküş simülasyonudur; sayfayı yenileyerek yeniden deneyebilirsiniz.)</div>
+                <div class="mt-4"> Gsv ollk xznv gl zm vmw lm gsv hvxlmw wzb lu xivzgrmt gsv hgztv...</div>
+                <div class="mt-2 text-xs text-yellow-300">Sayfayi yenileyerek tekrar deneyebilirsiniz</div>
             `;
         }
 
@@ -466,13 +466,13 @@
                         app.innerHTML = `<div class="text-green-400 mt-10">KİMLİK DOĞRULANDI. GÜNAYDIN, BAŞPATOLOG VAELEN.<br>KİŞİSEL NOTLAR YÜKLENİYOR...</div>`;
                         await sleep(1500);
                         renderDashboard();
-                    } else if (val === 'veidan') {
+                    } else if (val === 'VEIDAN') {
                         crashSystem();
                     } else if (val === 'vespa') {
                         playBuzz();
                         const errEl = document.getElementById('loginError');
                         if (errEl) {
-                            errEl.textContent = 'İNSEK TANIMLANDI. HEMEN KAÇIYOR...';
+                            errEl.textContent = 'BÖCEK TANIMLANDI. HEMEN LARPLANIYOR...';
                             errEl.classList.remove('hidden');
                         }
                         input.value = '';
