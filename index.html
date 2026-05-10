@@ -315,6 +315,7 @@
         let isTyping = false;
 
         let loginFocusListener = null;
+        let loginCrashed = false;
         let audioCtx = null;
 
         function getAudioCtx() {
@@ -322,6 +323,35 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
             return audioCtx;
+        }
+
+        function playBuzz(duration = 0.3, startFreq = 220, endFreq = 880) {
+            try {
+                const ctx = getAudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(startFreq, ctx.currentTime);
+                gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.start();
+                oscillator.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                oscillator.stop(ctx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function crashSystem() {
+            removeLoginFocusListener();
+            loginCrashed = true;
+            playBeep(80, 0.5, 0.2);
+            app.innerHTML = `
+                <div class="text-red-500 glitch-text font-bold">!!! SİSTEM HATASI !!!</div>
+                <div class="mt-4">ÇEKİRDEK BELLEK YIĞILDI. YEREL KORUMA DEVREYE GİRİYOR...</div>
+                <div class="mt-2 text-xs text-yellow-300">(Bu bir sistem çöküş simülasyonudur; sayfayı yenileyerek yeniden deneyebilirsiniz.)</div>
+            `;
         }
 
         function playBeep(freq = 800, duration = 0.05, vol = 0.05) {
@@ -428,7 +458,7 @@
             document.addEventListener('click', loginFocusListener);
 
             input.addEventListener('keydown', async (e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !loginCrashed) {
                     const val = input.value.trim().toLowerCase();
                     if (val === 'vaelen') {
                         removeLoginFocusListener();
@@ -436,6 +466,16 @@
                         app.innerHTML = `<div class="text-green-400 mt-10">KİMLİK DOĞRULANDI. GÜNAYDIN, BAŞPATOLOG VAELEN.<br>KİŞİSEL NOTLAR YÜKLENİYOR...</div>`;
                         await sleep(1500);
                         renderDashboard();
+                    } else if (val === 'veidan') {
+                        crashSystem();
+                    } else if (val === 'vespa') {
+                        playBuzz();
+                        const errEl = document.getElementById('loginError');
+                        if (errEl) {
+                            errEl.textContent = 'İNSEK TANIMLANDI. HEMEN KAÇIYOR...';
+                            errEl.classList.remove('hidden');
+                        }
+                        input.value = '';
                     } else {
                         playBeep(200, 0.3, 0.1);
                         const errEl = document.getElementById('loginError');
