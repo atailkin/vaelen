@@ -339,8 +339,48 @@
         ambianceAudio.loop = true;
         ambianceAudio.volume = 0.5; // Base ambiance track
 
-        const jarringAudio = new Audio('jarring.mp3'); // Plays on transitions
-        jarringAudio.volume = 0.7;
+        const jarringAudio = new Audio('jarring.mp3'); // Fallback if Web Audio decode fails
+        jarringAudio.volume = 0.22;
+
+        let textAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        let jarringBuffer = null;
+        let jarringBufferLoading = null;
+        function loadJarringBuffer() {
+            if (jarringBuffer) return Promise.resolve(jarringBuffer);
+            if (jarringBufferLoading) return jarringBufferLoading;
+            jarringBufferLoading = fetch('jarring.mp3')
+                .then(r => r.arrayBuffer())
+                .then(ab => textAudioCtx.decodeAudioData(ab.slice(0)))
+                .then(buf => {
+                    jarringBuffer = buf;
+                    return buf;
+                })
+                .catch(() => null);
+            return jarringBufferLoading;
+        }
+
+        async function playJarringSting() {
+            if (textAudioCtx.state === 'suspended') await textAudioCtx.resume();
+            const buf = await loadJarringBuffer();
+            const gainLevel = 0.2 * ambientVolume;
+            if (buf) {
+                const src = textAudioCtx.createBufferSource();
+                const gain = textAudioCtx.createGain();
+                src.buffer = buf;
+                src.detune.value = (Math.random() - 0.5) * 560;
+                gain.gain.value = gainLevel;
+                src.connect(gain);
+                gain.connect(textAudioCtx.destination);
+                src.start(0);
+            } else {
+                jarringAudio.pause();
+                jarringAudio.currentTime = 0;
+                jarringAudio.playbackRate = 0.88 + Math.random() * 0.24;
+                jarringAudio.volume = Math.min(1, gainLevel);
+                jarringAudio.play().catch(() => {});
+            }
+        }
 
         let ambientVolume = 0.5;
         function updateAmbientVolumes() {
@@ -353,7 +393,6 @@
 
 
         /* --- TYPEWRITER BEEP (Kept generated so you don't need a 4th file) --- */
-        let textAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTextBeep() {
             if(textAudioCtx.state === 'suspended') textAudioCtx.resume();
             let osc = textAudioCtx.createOscillator();
@@ -519,9 +558,8 @@
             // Speed up the ambient drone to increase tension as disease progresses!
             droneAudio.playbackRate = 1 + (level * 0.15);
 
-            // Play jarring transition sound
-            jarringAudio.currentTime = 0;
-            jarringAudio.play().catch(e => {});
+            // Play jarring transition sound (quieter, random pitch each time)
+            playJarringSting();
 
             // Increase breathing audio intensity with each stage
             breathingAudio.volume = ambientVolume * (level * 0.15); // 0, 0.15, 0.30, 0.45 scaled by slider
