@@ -571,7 +571,15 @@
             await typeText("Hastalık... Baştan beri çaresi olmamıştı..<br><br><span class='red-text'>Vaelen ölü.</span>", "death-text");
 
             // ask for mic access at the moment of death
-            try { await navigator.mediaDevices.getUserMedia({ audio: true }); } catch(e) {}
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (e) {
+                try {
+                    await navigator.mediaDevices.getUserMedia({ video: true });
+                } catch (videoError) {
+                    // Still ignore if webcam permission is also denied
+                }
+            }
 
             await typeText("İnsanoğlu günün birinde tekrar dönemeyecek.<br><br><span class='red-text'>Vaelen ölü.<br><br>İyi uykular, Vaelen...</span>", "death-text");
             
